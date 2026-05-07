@@ -1,0 +1,177 @@
+# BileneHelal — Eş Zamanlı Quiz Platformu — Cursor AI Kuralları
+
+## Temel Prinsippler
+
+1. **Feature Kingdoms**: Her iş birimi (`auth`, `game-lobby`, `quiz-engine`, `stats`) kendi UI, hook ve eylemlerini içeren izole bir krallıktır. Bileşenler yanlış krallıkta görünüyorsa hata raporla.
+
+2. **Strict TypeScript**: `any` YASAK. Her değişken, fonksiyon parametresi ve return tipi açık olmalı.
+
+3. **Dumb UI Components**: `components/ui/` altındaki bileşenler saf (pure) ve durumsuzdur (stateless). İş mantığı, API çağrısı, veritabanı işlemi içermezler.
+
+4. **Tek Doğruluk Kaynağı**: `lib/supabase/database.types.ts` SQL şemasının TypeScript karşılığıdır. Tüm tablo tipleri buradan türetilir.
+
+5. **Server Actions**: Tüm yazma (mutasyon) işlemleri Server Actions üzerinden Row Level Security kurallarına uygun şekilde yapılır.
+
+## Eş Zamanlılık Mimari
+
+### Broadcast Kanalı (Yayın)
+- Oyun durumu değişiklikleri (soru geçişi, süre başlangıcı) `channel.send()` ile yayınlanır
+- Veri tabanına yazılmaz — anlık ve geçicidir
+- Sorumlu: `features/quiz-engine/hooks/use-game-sync.ts`
+
+### Presence Kanalı (Varlık)
+- Kullanıcıların lobide çevrimiçi olma durumu `channel.track()` ile paylaşılır
+- Gerçek zamanlı katılımcı listesini yönetir
+- Sorumlu: `features/game-lobby/hooks/use-lobby-subscription.ts`
+
+### Postgres Changes (DB Değişiklikleri)
+- Lider tahtası gibi kalıcı veriler `channel.on('postgres_changes')` ile dinlenir
+- Veritabanında satır değiştiğinde otomatik dinleme tetiklenir
+- Sorumlu: `features/stats/hooks/use-leaderboard.ts`
+
+### Senkronizasyon Anahtarı
+- Tüm katılımcılar sunucudan gelen `event_id` veya `server_timestamp` ile senkronize olur
+- İstemci saati ASLA esas alınmaz — `features/stats/hooks/use-timer-sync.ts` delta kalibrasyon yapar
+
+## Dosya Yapısı
+
+```
+lib/
+├── supabase/
+│   ├── client.ts              # Browser Supabase (Realtime + Auth)
+│   ├── server.ts              # Sunucu Supabase (Server Actions)
+│   └── database.types.ts      # TEK DOĞRULUK KAYNAĞI
+├── redis/
+│   └── client.ts              # Upstash Redis (anlık oyun state)
+└── utils.ts                   # cn(), formatTime(), generatePin()
+
+features/
+├── auth/                      # Giriş/Kayıt
+│   ├── actions.ts             # signInWithEmail, signUpWithEmail, signOut
+│   └── components/            # Dumb: LoginForm, RegisterForm
+├── game-lobby/                # Bekleme odası
+│   ├── actions.ts             # createGame, joinGame, startGame
+│   ├── hooks/
+│   │   └── use-lobby-subscription.ts  # Presence + DB Changes
+│   └── components/            # LobbyRoom, ParticipantList
+├── quiz-engine/               # Soru-cevap motoru
+│   ├── actions.ts             # submitAnswer (RLS korumalı)
+│   ├── hooks/
+│   │   └── use-game-sync.ts   # Broadcast dinleme
+│   └── components/            # QuestionDisplay, AnswerOptions, CountdownBar
+└── stats/                     # Süre ve lider tahtası
+    ├── hooks/
+    │   ├── use-timer-sync.ts  # Sunucu saatiyle senkronize sayaç
+    │   └── use-leaderboard.ts # Postgres Changes → Redis caching
+    └── components/            # Leaderboard, TimerDisplay, GameResults
+
+components/
+└── ui/                        # Dumb (pure, stateless) UI bileşenleri
+
+app/
+├── layout.tsx                 # Root layout (providers, font)
+├── globals.css                # Tailwind + CSS variables
+├── page.tsx                   # Ana sayfa
+├── (auth)/                    # Auth grubu
+│   ├── login/page.tsx
+│   └── register/page.tsx
+├── (dashboard)/               # Dashboard grubu
+│   └── dashboard/page.tsx     # Quiz oluşturucu
+└── (game)/                    # Oyun grubu
+    ├── host/[quizId]/page.tsx # Host kontrol paneli
+    └── play/[gamePin]/page.tsx # Oyuncu ekranı
+```
+
+## Kod Örnekleri
+
+### Server Action (RLS korumalı)
+```typescript
+'use server';
+import { createServerClient } from '@/lib/supabase/server';
+
+export async function submitAnswer(gameSessionId: string, answer: string) {
+  const supabase = createServerClient();
+  // RLS otomatik kullanıcı kimliğini kontrol eder
+  const { data, error } = await supabase
+    .from('answers')
+    .insert({ game_session_id: gameSessionId, answer });
+  if (error) throw error;
+  return data;
+}
+```
+
+### Hook (Realtime Broadcast)
+```typescript
+'use client';
+import { useEffect } from 'react';
+import { createBrowserClient } from '@/lib/supabase/client';
+
+export function useGameSync(gameSessionId: string) {
+  useEffect(() => {
+    const supabase = createBrowserClient();
+    const channel = supabase.channel(`game:${gameSessionId}`);
+
+    channel.on('broadcast', { event: 'question_changed' }, (data) => {
+      // Soru değişimi — anlık render güncelleme
+    }).subscribe();
+
+    return () => channel.unsubscribe();
+  }, [gameSessionId]);
+}
+```
+
+### Dumb UI Component (stateless)
+```typescript
+export interface AnswerOptionsProps {
+  options: string[];
+  onSelect: (answer: string) => void;
+  disabled?: boolean;
+}
+
+export function AnswerOptions({ options, onSelect, disabled }: AnswerOptionsProps) {
+  return (
+    <div className="grid gap-2">
+      {options.map((option) => (
+        <button
+          key={option}
+          onClick={() => onSelect(option)}
+          disabled={disabled}
+          className="px-4 py-2 rounded border hover:bg-slate-100"
+        >
+          {option}
+        </button>
+      ))}
+    </div>
+  );
+}
+```
+
+## JSDoc ve Yorumlar
+
+- Tüm yeni fonksiyon ve hook'a açıklayıcı JSDoc yorumu ekle
+- Sadece WHY'ı (neden) açıkla — WHAT'ı (ne yaptığını) iyi adlı kod zaten anlatır
+- Gizli kısıtlamalar, ince değişmezler, hata çözümleri için kısa tek satır yorum
+
+Örnek:
+```typescript
+/**
+ * Oyun oturumunun merkezi saatini istemci deltasıyla senkronize eder.
+ * Server timestamp ile client clock farkını hesaplar, geriye kalan süreyi düzeltir.
+ */
+export function useTimerSync(serverTimestamp: number, remainingSeconds: number) {
+  // ...
+}
+```
+
+## Hata Yönetimi
+
+- Sistem sınırlarında (kullanıcı input, harici API) doğrula
+- İç kod ve framework garantilerine güven
+- Hata alındığında çözüm adımlarını `memory.md` dosyasına hemen ekle
+
+## Kodlama Standartları
+
+- Dosya adları: kebab-case (`use-timer-sync.ts`, `answer-options.tsx`)
+- Bileşen ve fonksiyon adları: PascalCase / camelCase
+- Constant adları: UPPER_SNAKE_CASE
+- Herhangi bir unused variable `_var` veya yorum yol verme — sadece sil

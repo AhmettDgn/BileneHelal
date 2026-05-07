@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\HP\\\\Desktop\\\\BileneHelal\" -Recurse -Include \"package.json\")",
+      "Bash(Select-Object -First 1)"
+    ]
+  }
+}
