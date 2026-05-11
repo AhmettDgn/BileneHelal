@@ -1,6 +1,6 @@
 /**
  * Ana sayfa - server-first landing page.
- * Interaktif join akisina yalnizca gerekli client JS yuklenir.
+ * 60/30/10 renk dagilimi: koyu zemin, camimsi katmanlar, neon vurgu.
  */
 
 import Link from 'next/link';
@@ -15,11 +15,12 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { HomeJoinPanel } from '@/features/game-lobby/components/HomeJoinPanel';
+import { createServerClient } from '@/lib/supabase/server';
 
 const HERO_METRICS = [
-  { value: '6 hane', label: 'hizli katilim PINi' },
-  { value: 'Anlik', label: 'leaderboard akisi' },
-  { value: 'Host', label: 'tek panel kontrolu' },
+  { value: '60%', label: 'derin gece tabani' },
+  { value: '30%', label: 'cam panel derinligi' },
+  { value: '10%', label: 'neon odak vurgusu' },
 ];
 
 const FEATURE_CARDS = [
@@ -36,10 +37,10 @@ const FEATURE_CARDS = [
       'Karisik onboarding yerine host ve oyuncu icin cok kisa bir baslangic yolu sunar.',
   },
   {
-    eyebrow: 'Oyuncu deneyimi',
-    title: 'Cevap verirken kaybolmayan net ve odakli arayuz',
+    eyebrow: 'Odakli deneyim',
+    title: 'Neon vurgular sadece karar aninda parliyor',
     description:
-      'Buyuk tipografi, temiz hiyerarsi ve hizli karar vermeyi destekleyen alanlar kullanir.',
+      'Arayuzun cogu sakin kaliyor, dikkat ise butonlar, canli durum ve sayilara toplaniyor.',
   },
 ];
 
@@ -54,98 +55,127 @@ const FLOW_STEPS = [
     step: '02',
     title: 'PIN ile oyuncu topla',
     description:
-      'Oyuncular sadece 6 haneli PIN ve gorunen adlariyla saniyeler icinde lobiye girer.',
+      'Oyuncular 6 haneli PIN ile, gerekiyorsa gorunen adlariyla saniyeler icinde lobiye girer.',
   },
   {
     step: '03',
-    title: 'Canli rekabeti yonet',
+    title: 'Neon hizla yonet',
     description:
-      'Sure, soru gecisi ve skor akisi tek bir ritimle ilerler; dikkat dagilmaz.',
+      'Sure, soru gecisi ve skor akisi tek ritimde ilerler; host paneli hafif ve net kalir.',
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const registeredDisplayName =
+    typeof user?.user_metadata?.display_name === 'string'
+      ? user.user_metadata.display_name
+      : user?.email ?? null;
+
   return (
-    <div className="pb-16 pt-8 sm:pt-12">
-      <section className="relative overflow-hidden rounded-[32px] border border-slate-200 bg-[linear-gradient(135deg,#f8fafc_0%,#eff6ff_45%,#fff7ed_100%)] px-6 py-8 shadow-[0_30px_80px_-48px_rgba(15,23,42,0.35)] sm:px-10 sm:py-12 lg:px-14 lg:py-14">
+    <div className="pb-14 pt-6 sm:pb-16 sm:pt-8 lg:pt-12">
+      <section className="theme-panel neon-cyan relative overflow-hidden rounded-[28px] border px-4 py-6 sm:rounded-[34px] sm:px-8 sm:py-10 lg:px-14 lg:py-14">
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -left-16 top-10 h-40 w-40 rounded-full bg-sky-200/40 blur-3xl" />
-          <div className="absolute right-0 top-0 h-52 w-52 rounded-full bg-orange-200/35 blur-3xl" />
-          <div className="absolute bottom-0 left-1/3 h-44 w-44 rounded-full bg-emerald-200/20 blur-3xl" />
+          <div className="absolute -left-12 top-0 h-52 w-52 rounded-full bg-cyan-400/12 blur-3xl" />
+          <div className="absolute right-0 top-10 h-44 w-44 rounded-full bg-fuchsia-400/12 blur-3xl" />
+          <div className="absolute bottom-0 left-1/3 h-36 w-36 rounded-full bg-sky-300/10 blur-3xl" />
+          <div className="theme-dot-grid absolute inset-0 opacity-25" />
         </div>
 
-        <div className="relative grid items-start gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]">
+        <div className="relative grid items-start gap-8 lg:gap-10 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
           <div className="max-w-3xl">
-            <Badge className="mb-4 border-slate-300 bg-white/80 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-slate-700 shadow-sm">
+            <Badge className="theme-chip mb-4 px-3 py-1 text-[11px] uppercase tracking-[0.24em]">
               Realtime multiplayer quiz
             </Badge>
 
-            <h1 className="max-w-2xl text-4xl font-bold leading-tight tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
-              Kalabaligi ayni anda oyuna alan hizli ve net quiz deneyimi.
+            <h1 className="max-w-2xl text-[2rem] font-bold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
+              Karanlik zeminde parlayan, hiz odakli modern quiz deneyimi.
             </h1>
 
-            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-              BileneHalal, host ekranini sade tutarken oyunculari da bekletmeden
-              oyuna alir. Daha az tik, daha temiz akis, daha guclu canli rekabet.
+            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
+              BileneHalal arayuzu 60/30/10 dengesiyle kuruldu: genis koyu alanlar,
+              orta katmanda camimsi paneller ve sadece odak anlarinda devreye giren
+              neon isiklar.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button asChild size="lg" className="h-12 px-6 text-sm">
+              <Button asChild size="lg" className="neon-cyan h-12 w-full px-6 text-sm sm:w-auto">
                 <Link href="/dashboard">Quiz olusturmaya basla</Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="h-12 px-6 text-sm">
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="h-12 w-full border-cyan-300/20 bg-cyan-300/5 px-6 text-sm text-cyan-100 hover:bg-cyan-300/10 hover:text-cyan-50 sm:w-auto"
+              >
                 <Link href="/login">Host olarak giris yap</Link>
               </Button>
             </div>
 
             <div className="mt-10 grid gap-3 sm:grid-cols-3">
-              {HERO_METRICS.map((item) => (
+              {HERO_METRICS.map((item, index) => (
                 <div
                   key={item.label}
-                  className="rounded-2xl border border-white/70 bg-white/70 px-4 py-4 shadow-sm backdrop-blur"
+                  className={[
+                    'theme-panel-soft rounded-2xl border px-4 py-4',
+                    index === 2 ? 'neon-pink' : '',
+                  ].join(' ')}
                 >
-                  <p className="text-xl font-bold text-slate-950">{item.value}</p>
-                  <p className="mt-1 text-sm text-slate-600">{item.label}</p>
+                  <p className={index === 2 ? 'accent-text-pink text-xl font-bold' : 'accent-text-cyan text-xl font-bold'}>
+                    {item.value}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-300">{item.label}</p>
                 </div>
               ))}
             </div>
           </div>
 
           <div className="relative">
-            <div className="absolute inset-x-8 -top-6 h-20 rounded-full bg-slate-900/10 blur-3xl" />
-            <div className="relative rounded-[28px] border border-slate-200/80 bg-white/90 p-3 shadow-[0_30px_80px_-48px_rgba(15,23,42,0.55)] backdrop-blur">
-              <div className="mb-3 flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-950 px-4 py-3 text-white">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.24em] text-slate-300">
+            <div className="absolute inset-x-8 -top-6 h-20 rounded-full bg-cyan-400/15 blur-3xl" />
+            <div className="theme-panel-light neon-pink relative rounded-[24px] border p-2 sm:rounded-[28px] sm:p-3">
+              <div className="mb-3 flex flex-col gap-3 rounded-2xl border border-fuchsia-300/15 bg-fuchsia-300/8 px-4 py-3 text-white min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
+                <div className="min-w-0">
+                  <p className="accent-text-pink text-xs uppercase tracking-[0.24em]">
                     Hizli katilim
                   </p>
-                  <p className="mt-1 text-sm font-medium">
-                    Oyunculari saniyeler icinde lobiye al
+                  <p className="mt-1 text-sm font-medium text-slate-100">
+                    Oyunculari saniyeler icinde neon lobiye al
                   </p>
                 </div>
-                <div className="rounded-full border border-white/15 px-3 py-1 text-xs text-slate-200">
-                  Live
+                <div className="w-fit rounded-full border border-fuchsia-300/20 bg-fuchsia-300/8 px-3 py-1 text-xs text-fuchsia-100">
+                  LIVE
                 </div>
               </div>
 
-              <HomeJoinPanel />
+              <HomeJoinPanel
+                initialDisplayName={registeredDisplayName}
+                initialIsAuthenticated={Boolean(user)}
+              />
             </div>
           </div>
         </div>
       </section>
 
-      <section className="mt-10 grid gap-4 lg:grid-cols-3">
-        {FEATURE_CARDS.map((feature) => (
+      <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {FEATURE_CARDS.map((feature, index) => (
           <Card
             key={feature.title}
-            className="border border-slate-200/80 bg-white/85 shadow-[0_24px_60px_-46px_rgba(15,23,42,0.35)]"
+            className={[
+              'theme-panel-soft rounded-[26px] border text-white',
+              index === 1 ? 'neon-cyan' : '',
+              index === 2 ? 'neon-pink' : '',
+            ].join(' ')}
           >
             <CardHeader>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-700">
+              <p className={index === 2 ? 'accent-text-pink text-[11px] font-semibold uppercase tracking-[0.22em]' : 'accent-text-cyan text-[11px] font-semibold uppercase tracking-[0.22em]'}>
                 {feature.eyebrow}
               </p>
-              <CardTitle className="text-xl text-slate-950">{feature.title}</CardTitle>
-              <CardDescription className="text-sm leading-6 text-slate-600">
+              <CardTitle className="text-xl text-white">{feature.title}</CardTitle>
+              <CardDescription className="text-sm leading-6 text-slate-300">
                 {feature.description}
               </CardDescription>
             </CardHeader>
@@ -153,33 +183,34 @@ export default function HomePage() {
         ))}
       </section>
 
-      <section className="mt-10 grid gap-6 rounded-[28px] border border-slate-200 bg-white px-6 py-8 shadow-[0_26px_70px_-52px_rgba(15,23,42,0.28)] lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
+      <section className="theme-panel-soft mt-8 grid gap-6 rounded-[28px] border px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:grid-cols-[0.9fr_1.1fr]">
         <div>
-          <Badge variant="outline" className="border-slate-300 bg-slate-50 text-slate-700">
-            Oyun akisi
-          </Badge>
-          <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-950">
+          <Badge className="theme-chip text-slate-100">Oyun akisi</Badge>
+          <h2 className="mt-4 text-2xl font-bold tracking-tight text-white sm:text-3xl">
             Host panelinden oyuncu ekranina kadar hiz kaybetmeyen bir duzen.
           </h2>
-          <p className="mt-4 max-w-xl text-sm leading-7 text-slate-600 sm:text-base">
-            Arayuzu gereksiz kalabaliga bogmadan, oyun aninda onemli olan seyleri
-            one cikariyoruz: hizli katilim, net bilgi, anlik skor ve rahat yonetim.
+          <p className="mt-4 max-w-xl text-sm leading-7 text-slate-300 sm:text-base">
+            Koyu ana kitle, daha sakin ikinci katman ve sadece kritik UI anlarinda
+            gorunen neon vurgu sayesinde hem gorsel kalite hem okunabilirlik korunur.
           </p>
         </div>
 
         <div className="grid gap-4">
-          {FLOW_STEPS.map((item) => (
+          {FLOW_STEPS.map((item, index) => (
             <Card
               key={item.step}
-              className="border border-slate-200 bg-slate-50/80 shadow-none"
+              className={[
+                'rounded-[24px] border border-cyan-300/10 bg-slate-950/35 shadow-none',
+                index === 2 ? 'neon-cyan' : '',
+              ].join(' ')}
             >
-              <CardContent className="flex gap-4 py-5">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-sm font-bold text-white">
+              <CardContent className="flex items-start gap-4 py-5">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 text-sm font-bold text-cyan-200">
                   {item.step}
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-950">{item.title}</h3>
-                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                  <h3 className="text-lg font-semibold text-white">{item.title}</h3>
+                  <p className="mt-1 text-sm leading-6 text-slate-300">
                     {item.description}
                   </p>
                 </div>
@@ -189,31 +220,31 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mt-10">
-        <Card className="overflow-hidden border border-slate-200 bg-slate-950 text-slate-50 shadow-[0_30px_80px_-50px_rgba(15,23,42,0.75)]">
-          <CardContent className="grid gap-6 px-6 py-8 sm:px-8 lg:grid-cols-[1fr_auto] lg:items-center">
+      <section className="mt-8">
+        <Card className="theme-panel neon-pink overflow-hidden rounded-[30px] border text-slate-50">
+          <CardContent className="grid gap-6 px-4 py-6 sm:px-8 sm:py-8 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-sky-300">
+              <p className="accent-text-pink text-[11px] font-semibold uppercase tracking-[0.24em]">
                 Dashboard hazir
               </p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight">
+              <h2 className="mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl">
                 Kendi quizini kur, canli oyunu tek panelden yonet.
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
                 Soru olusturma, yayinlama ve oyun baslatma akisini tek yerde topla.
-                Hedef, oyun baslamadan once degil oyun sirasinda parlamak.
+                Neon detaylar dikkat toplar, ana yuzey ise performansli ve sakin kalir.
               </p>
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-              <Button asChild size="lg" className="bg-white text-slate-950 hover:bg-slate-100">
+              <Button asChild size="lg" className="neon-cyan w-full sm:w-auto lg:w-full">
                 <Link href="/register">Hesap olustur</Link>
               </Button>
               <Button
                 asChild
                 size="lg"
                 variant="outline"
-                className="border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white"
+                className="w-full border-fuchsia-300/20 bg-fuchsia-300/5 text-fuchsia-100 hover:bg-fuchsia-300/10 hover:text-fuchsia-50 sm:w-auto lg:w-full"
               >
                 <Link href="/dashboard">Dashboard&apos;a git</Link>
               </Button>

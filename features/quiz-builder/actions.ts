@@ -1,13 +1,13 @@
 /**
- * Quiz Builder Kingdom — Server Actions
- * Quiz ve soru oluşturma, güncelleme, silme
+ * Quiz builder server actions.
  */
 
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createServerClient } from '@/lib/supabase/server';
+
 import type { TablesInsert } from '@/lib/supabase/database.types';
+import { createServerClient } from '@/lib/supabase/server';
 
 interface QuestionInput {
   text: string;
@@ -17,28 +17,37 @@ interface QuestionInput {
   points: number;
 }
 
-interface CreateQuizInput {
+interface SaveQuizInput {
   title: string;
   description: string | null;
   questions: QuestionInput[];
   isPublished?: boolean;
 }
 
-/**
- * Yeni quiz ve soruları atomik olarak oluşturur.
- * Quiz ve sorular tek bir transactional flow'da insert edilir.
- */
-export async function createQuiz(input: CreateQuizInput) {
+const buildQuestionsPayload = (
+  quizId: string,
+  questions: QuestionInput[],
+): TablesInsert<'questions'>[] =>
+  questions.map((question, index) => ({
+    quiz_id: quizId,
+    order: index,
+    text: question.text,
+    options: question.options,
+    correct_option_index: question.correctOptionIndex,
+    time_limit_seconds: question.timeLimitSeconds,
+    points: question.points,
+  }));
+
+export async function createQuiz(input: SaveQuizInput) {
   const supabase = await createServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new Error('Quiz oluşturmak için giriş yapmalısın');
+    throw new Error('Quiz olusturmak icin giris yapmalisin');
   }
 
-  // 1. Quiz kaydı oluştur
   const { data: quiz, error: quizError } = await supabase
     .from('quizzes')
     .insert({
@@ -51,29 +60,17 @@ export async function createQuiz(input: CreateQuizInput) {
     .single();
 
   if (quizError || !quiz) {
-    throw new Error(`Quiz oluşturulamadı: ${quizError?.message ?? 'bilinmeyen hata'}`);
+    throw new Error(
+      `Quiz olusturulamadi: ${quizError?.message ?? 'bilinmeyen hata'}`,
+    );
   }
 
-  // 2. Soruları batch olarak ekle
   if (input.questions.length > 0) {
-    const questionsPayload: TablesInsert<'questions'>[] = input.questions.map(
-      (q, idx) => ({
-        quiz_id: quiz.id,
-        order: idx,
-        text: q.text,
-        options: q.options,
-        correct_option_index: q.correctOptionIndex,
-        time_limit_seconds: q.timeLimitSeconds,
-        points: q.points,
-      }),
-    );
-
     const { error: questionsError } = await supabase
       .from('questions')
-      .insert(questionsPayload);
+      .insert(buildQuestionsPayload(quiz.id, input.questions));
 
     if (questionsError) {
-      // Quiz'i geri al — orphan kayıt kalmasın
       await supabase.from('quizzes').delete().eq('id', quiz.id);
       throw new Error(`Sorular eklenemedi: ${questionsError.message}`);
     }
@@ -83,34 +80,81 @@ export async function createQuiz(input: CreateQuizInput) {
   return quiz;
 }
 
-/**
- * Mevcut quizi günceller.
- * RLS sayesinde sadece sahip güncelleyebilir.
- */
-export async function updateQuiz(
+export async function updateQuizDefinition(
   quizId: string,
-  patch: { title?: string; description?: string | null; is_published?: boolean },
+  input: SaveQuizInput,
 ) {
   const supabase = await createServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const { data, error } = await supabase
+  if (!user) {
+    throw new Error('Quiz guncellemek icin giris yapmalisin');
+  }
+
+  const { data: quiz, error: quizError } = await supabase
     .from('quizzes')
-    .update(patch)
+    .select('id, owner_id')
     .eq('id', quizId)
-    .select()
     .single();
 
-  if (error) {
-    throw new Error(`Quiz güncellenemedi: ${error.message}`);
+  if (quizError || !quiz || quiz.owner_id !== user.id) {
+    throw new Error('Bu quizi guncelleme yetkin yok');
+  }
+
+  const { data: activeSession, error: activeSessionError } = await supabase
+    .from('game_sessions')
+    .select('id')
+    .eq('quiz_id', quizId)
+    .in('status', ['waiting', 'in_progress'])
+    .limit(1)
+    .maybeSingle();
+
+  if (activeSessionError) {
+    throw new Error(`Aktif oyun kontrolu basarisiz: ${activeSessionError.message}`);
+  }
+
+  if (activeSession) {
+    throw new Error('Bekleyen veya aktif bir oyun varken quiz duzenlenemez');
+  }
+
+  const { error: updateError } = await supabase
+    .from('quizzes')
+    .update({
+      title: input.title,
+      description: input.description,
+      is_published: input.isPublished ?? false,
+    })
+    .eq('id', quizId);
+
+  if (updateError) {
+    throw new Error(`Quiz guncellenemedi: ${updateError.message}`);
+  }
+
+  const { error: deleteError } = await supabase
+    .from('questions')
+    .delete()
+    .eq('quiz_id', quizId);
+
+  if (deleteError) {
+    throw new Error(`Eski sorular temizlenemedi: ${deleteError.message}`);
+  }
+
+  if (input.questions.length > 0) {
+    const { error: insertError } = await supabase
+      .from('questions')
+      .insert(buildQuestionsPayload(quizId, input.questions));
+
+    if (insertError) {
+      throw new Error(`Guncel sorular kaydedilemedi: ${insertError.message}`);
+    }
   }
 
   revalidatePath('/dashboard');
-  return data;
+  revalidatePath(`/quiz/${quizId}/edit`);
 }
 
-/**
- * Quizi siler. Cascade ile bağlı sorular ve oturumlar da silinir.
- */
 export async function deleteQuiz(quizId: string) {
   const supabase = await createServerClient();
 
@@ -123,9 +167,6 @@ export async function deleteQuiz(quizId: string) {
   revalidatePath('/dashboard');
 }
 
-/**
- * Mevcut kullanıcının tüm quizlerini döner.
- */
 export async function listMyQuizzes() {
   const supabase = await createServerClient();
   const {

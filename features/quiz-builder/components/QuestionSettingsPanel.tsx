@@ -1,6 +1,5 @@
 /**
- * Quiz Builder Kingdom — QuestionSettingsPanel (Dumb UI, sağ panel)
- * Aktif soru için süre, puan ve silme kontrolü.
+ * QuestionSettingsPanel - aktif soru ayarlari.
  */
 
 'use client';
@@ -24,16 +23,18 @@ export function QuestionSettingsPanel({
   canRemove,
 }: QuestionSettingsPanelProps) {
   return (
-    <aside className="bg-white border rounded-lg p-6 space-y-6 h-full">
+    <aside className="theme-panel-soft h-full space-y-6 rounded-[24px] border border-slate-800 p-4 text-slate-100 sm:p-6">
       <div>
-        <h3 className="text-base font-semibold text-slate-950">Soru Ayarları</h3>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Bu soru için süre ve puanı buradan düzenle.
+        <h3 className="text-base font-semibold text-white">Soru Ayarlari</h3>
+        <p className="mt-1 text-xs text-slate-400">
+          Bu soru icin sure ve puani buradan duzenle.
         </p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="setting-time">Süre (saniye)</Label>
+        <Label htmlFor="setting-time" className="text-slate-300">
+          Sure (saniye)
+        </Label>
         <Input
           id="setting-time"
           type="number"
@@ -43,12 +44,15 @@ export function QuestionSettingsPanel({
           onChange={(e) =>
             onChange({ timeLimitSeconds: Number(e.target.value) })
           }
+          className="rounded-2xl border-slate-700 bg-slate-950/70 text-slate-100"
         />
-        <p className="text-xs text-muted-foreground">5–300 saniye arası.</p>
+        <p className="text-xs text-slate-500">5-300 saniye arasi.</p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="setting-points">Puan</Label>
+        <Label htmlFor="setting-points" className="text-slate-300">
+          Puan
+        </Label>
         <Input
           id="setting-points"
           type="number"
@@ -56,25 +60,26 @@ export function QuestionSettingsPanel({
           max={1000}
           value={question.points}
           onChange={(e) => onChange({ points: Number(e.target.value) })}
+          className="rounded-2xl border-slate-700 bg-slate-950/70 text-slate-100"
         />
-        <p className="text-xs text-muted-foreground">
-          Doğru cevap için verilecek temel puan.
+        <p className="text-xs text-slate-500">
+          Dogru cevap icin verilecek temel puan.
         </p>
       </div>
 
-      <div className="pt-4 border-t">
+      <div className="border-t border-slate-700 pt-4">
         <Button
           type="button"
           variant="outline"
           onClick={onRemove}
           disabled={!canRemove}
-          className="w-full text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 disabled:text-slate-400 disabled:border-slate-200"
+          className="w-full border-rose-400/30 bg-rose-400/10 text-rose-100 hover:bg-rose-400/15 hover:text-rose-50 disabled:border-slate-700 disabled:bg-slate-950/50 disabled:text-slate-500"
         >
           Bu Soruyu Sil
         </Button>
         {!canRemove && (
-          <p className="mt-2 text-xs text-muted-foreground text-center">
-            En az bir soru kalmalı.
+          <p className="mt-2 text-center text-xs text-slate-500">
+            En az bir soru kalmali.
           </p>
         )}
       </div>

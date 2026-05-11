@@ -28,23 +28,23 @@ export function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
   };
 
   return (
-    <div className="mx-auto w-full max-w-md rounded-[28px] border border-slate-200 bg-white p-8 shadow-[0_30px_80px_-56px_rgba(15,23,42,0.4)]">
-      <h1 className="mb-2 text-2xl font-bold tracking-tight text-slate-950">
+    <div className="theme-panel neon-cyan mx-auto w-full max-w-md rounded-[24px] border p-4 text-slate-100 sm:rounded-[28px] sm:p-8">
+      <h1 className="mb-2 text-xl font-bold tracking-tight text-white sm:text-2xl">
         Giris Yap
       </h1>
-      <p className="mb-6 text-sm leading-6 text-slate-600">
+      <p className="mb-6 text-sm leading-6 text-slate-300">
         Host paneline ve quiz yonetimine erismek icin hesabinla devam et.
       </p>
 
       {error && (
-        <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+        <div className="mb-4 rounded-2xl border border-rose-400/25 bg-rose-400/10 p-3 text-sm text-rose-100">
           {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="email">E-posta</Label>
+          <Label htmlFor="email" className="text-slate-300">E-posta</Label>
           <Input
             id="email"
             type="email"
@@ -53,12 +53,12 @@ export function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
             onChange={(e) => setEmail(e.target.value)}
             required
             disabled={isLoading}
-            className="h-12 rounded-2xl border-slate-300 bg-slate-50"
+            className="h-12 rounded-2xl border-slate-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-500"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Sifre</Label>
+          <Label htmlFor="password" className="text-slate-300">Sifre</Label>
           <Input
             id="password"
             type="password"
@@ -67,18 +67,18 @@ export function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
             onChange={(e) => setPassword(e.target.value)}
             required
             disabled={isLoading}
-            className="h-12 rounded-2xl border-slate-300 bg-slate-50"
+            className="h-12 rounded-2xl border-slate-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-500"
           />
         </div>
 
-        <Button type="submit" disabled={isLoading} className="h-12 w-full rounded-2xl">
+        <Button type="submit" disabled={isLoading} className="neon-cyan h-12 w-full rounded-2xl">
           {isLoading ? 'Giris yapiliyor...' : 'Giris Yap'}
         </Button>
       </form>
 
-      <div className="mt-6 text-center text-sm text-slate-500">
+      <div className="mt-6 text-center text-sm text-slate-400">
         Hesabin yok mu?{' '}
-        <Link href="/register" className="font-medium text-slate-950 hover:underline">
+        <Link href="/register" className="accent-text-cyan font-medium hover:underline">
           Kayit ol
         </Link>
       </div>

@@ -144,6 +144,14 @@ Bu dosya, projenin geliştirme süreci boyunca alınan kritik kararların, karş
 - **Stil Altyapisi:** `app/globals.css` icine `lobby-enter` ve `lobby-pulse` keyframe'leri eklendi. Bunlar sadece lobi kartlarinda kullaniliyor; agir kutuphane eklenmedi.
 - **Doğrulama:** `npm.cmd run type-check` ve `npm.cmd run build` basariyla gecti.
 
+### 2026-05-07 - 60/30/10 Neon Tema Guncellemesi
+- **Görev:** Frontend renk sistemi 60/30/10 kuralina gore yeniden duzenlendi; agir animasyon kutuphaneleri eklenmeden CSS tabanli neon isik dili eklendi.
+- **Renk Dağılımı:** Dominant katman koyu gece tonu (`60%`), ikincil katman camimsi panel/surface tonlari (`30%`), vurgu katmani ise neon cyan ve neon pink accent'ler (`10%`) olarak kurgulandi.
+- **Global Stil:** `app/globals.css` tamamen yenilendi. Yeni HSL token'lari, body mesh/grid overlay'i, `theme-panel`, `theme-panel-soft`, `theme-chip`, `neon-cyan`, `neon-pink`, `accent-text-*` utility siniflari eklendi.
+- **UI Uygulama Alanı:** `app/layout.tsx`, `app/page.tsx`, auth formlari, `JoinGameForm`, host/player lobi ekranlari ve katilimci kartlari yeni palette gecirildi. Beyaz agirlikli gorunum azaltildi; neon sadece aksiyon, durum ve odak alanlarinda kullanildi.
+- **Performans Notu:** Efektler yalnizca CSS gradient, shadow, blur ve keyframe ile kuruldu; ekstra runtime maliyeti yaratacak JS animasyon kutuphanesi eklenmedi.
+- **Doğrulama:** `npm.cmd run type-check` ve `npm.cmd run build` tekrar basariyla gecti.
+
 ### 2026-05-06 - Phase 4 Progress (Quiz Yaşam Döngüsü)
 - **Görev:** Dashboard'daki "Oyun Başlat" akışı placeholder'lardan arındırılıp gerçek `game_sessions` oluşturma + host paneli zincirine bağlandı.
 - **createGameSession Düzeltmesi:** `features/game-lobby/actions.ts` içinde `total_questions: 0` placeholder'ı kaldırıldı. Insert öncesinde quiz varlığı + sahiplik (`quizzes.owner_id === user.id`) doğrulanıyor; ardından `questions` tablosundan `count: 'exact', head: true` ile soru sayısı alınıyor. Sayı `0` ise `Soru içermeyen quiz başlatılamaz` hatası fırlatılıyor.

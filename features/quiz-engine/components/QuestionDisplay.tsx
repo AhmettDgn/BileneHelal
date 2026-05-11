@@ -10,6 +10,7 @@ interface QuestionDisplayProps {
   totalQuestions: number;
   text: string;
   options: string[];
+  timeRemainingSeconds?: number;
   onAnswerSelect: (optionIndex: number) => void;
   isAnswered?: boolean;
   isLoading?: boolean;
@@ -22,27 +23,39 @@ export function QuestionDisplay({
   totalQuestions,
   text,
   options,
+  timeRemainingSeconds,
   onAnswerSelect,
   isAnswered,
   isLoading,
   correctOptionIndex,
   selectedOptionIndex,
 }: QuestionDisplayProps) {
+  const canRevealCorrectAnswer = typeof correctOptionIndex === 'number';
+
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="mx-auto w-full max-w-2xl">
       <div className="mb-6">
-        <p className="text-sm text-gray-600">
-          Soru {questionNumber} / {totalQuestions}
-        </p>
-        <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-slate-300">
+            Soru {questionNumber} / {totalQuestions}
+          </p>
+          {typeof timeRemainingSeconds === 'number' && (
+            <div className="theme-chip rounded-full px-3 py-1 text-sm text-cyan-100">
+              Sayaç: <span className="font-semibold">{timeRemainingSeconds} sn</span>
+            </div>
+          )}
+        </div>
+        <div className="mt-2 h-2 w-full rounded-full bg-slate-800/80">
           <div
-            className="bg-blue-600 h-2 rounded-full"
+            className="h-2 rounded-full bg-cyan-400"
             style={{ width: `${(questionNumber / totalQuestions) * 100}%` }}
-          ></div>
+          />
         </div>
       </div>
 
-      <h2 className="text-2xl font-bold mb-6">{text}</h2>
+      <h2 className="mb-6 text-2xl font-bold leading-tight text-white sm:text-3xl">
+        {text}
+      </h2>
 
       <div className="space-y-3">
         {options.map((option, index) => (
@@ -50,14 +63,16 @@ export function QuestionDisplay({
             key={index}
             onClick={() => onAnswerSelect(index)}
             disabled={isAnswered || isLoading}
-            className={`w-full p-4 rounded border-2 text-left transition ${
+            className={`w-full rounded-2xl border px-4 py-4 text-left text-sm transition sm:text-base ${
               isAnswered
-                ? index === correctOptionIndex
-                  ? 'border-green-500 bg-green-50'
+                ? canRevealCorrectAnswer && index === correctOptionIndex
+                  ? 'border-emerald-400 bg-emerald-400/12 text-emerald-50'
                   : index === selectedOptionIndex
-                    ? 'border-red-500 bg-red-50'
-                    : 'border-gray-300 bg-gray-50'
-                : 'border-gray-300 hover:border-blue-500 hover:bg-blue-50'
+                    ? canRevealCorrectAnswer
+                      ? 'border-rose-400 bg-rose-400/12 text-rose-50'
+                      : 'border-cyan-400 bg-cyan-400/12 text-cyan-50'
+                    : 'border-slate-700 bg-slate-900/50 text-slate-400'
+                : 'border-slate-700 bg-slate-950/55 text-slate-100 hover:border-cyan-400/60 hover:bg-cyan-400/10'
             }`}
           >
             {option}

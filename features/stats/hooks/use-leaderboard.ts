@@ -1,109 +1,87 @@
 /**
- * Stats Kingdom — useLeaderboard Hook
- * Postgres Changes ile lider tahtasını (scores) gerçek zamanlı takip eder
+ * Lider tablosunu RPC ile periyodik yeniler.
  */
 
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createBrowserClient } from '@/lib/supabase/client';
-import type { Tables } from '@/lib/supabase/database.types';
 
-type Score = Tables<'scores'>;
+import { createBrowserClient } from '@/lib/supabase/client';
+
+export interface LeaderboardEntry {
+  participantId: string;
+  displayName: string;
+  totalScore: number;
+  correctAnswers: number;
+}
 
 interface LeaderboardState {
-  scores: Score[];
+  entries: LeaderboardEntry[];
   isLoading: boolean;
   error: Error | null;
 }
 
-/**
- * Oyun oturumunun lider tahtasını (sıralama) dinler.
- * Scores tablosundaki değişiklikleri otomatik takip eder ve render'ı günceller.
- */
-export function useLeaderboard(gameSessionId: string): LeaderboardState {
+export function useLeaderboard(
+  gameSessionId: string,
+  participantId?: string | null,
+): LeaderboardState {
   const [state, setState] = useState<LeaderboardState>({
-    scores: [],
+    entries: [],
     isLoading: true,
     error: null,
   });
 
   useEffect(() => {
     const supabase = createBrowserClient();
+    let cancelled = false;
 
-    // İlk puanları yükle (sıralanmış)
-    const loadScores = async () => {
+    const loadEntries = async () => {
       try {
-        const { data, error } = await supabase
-          .from('scores')
-          .select('*')
-          .eq('game_session_id', gameSessionId)
-          .order('total_score', { ascending: false });
+        const { data, error } = await supabase.rpc('get_leaderboard_entries', {
+          p_game_session_id: gameSessionId,
+          p_participant_id: participantId ?? null,
+          p_limit: 5,
+        });
 
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
 
-        setState((prev) => ({
-          ...prev,
-          scores: data || [],
+        if (cancelled) {
+          return;
+        }
+
+        setState({
+          entries: (data ?? []).map((entry) => ({
+            participantId: entry.participant_id,
+            displayName: entry.display_name,
+            totalScore: entry.total_score,
+            correctAnswers: entry.correct_answers,
+          })),
           isLoading: false,
-        }));
+          error: null,
+        });
       } catch (error) {
+        if (cancelled) {
+          return;
+        }
+
         setState((prev) => ({
           ...prev,
-          error: error instanceof Error ? error : new Error('Bilinmeyen hata'),
           isLoading: false,
+          error: error instanceof Error ? error : new Error('Bilinmeyen hata'),
         }));
       }
     };
 
-    loadScores();
-
-    // Postgres Changes ile scores güncellemeleri dinle
-    const channel = supabase
-      .channel(`leaderboard:${gameSessionId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'scores',
-          filter: `game_session_id=eq.${gameSessionId}`,
-        },
-        (payload) => {
-          setState((prev) => {
-            if (payload.eventType === 'INSERT') {
-              const newScore = payload.new as Score;
-              // Yeni puanı sıralanmış şekilde ekle
-              const updated = [...prev.scores, newScore];
-              updated.sort((a, b) => b.total_score - a.total_score);
-              return { ...prev, scores: updated };
-            }
-            if (payload.eventType === 'UPDATE') {
-              const updated = payload.new as Score;
-              const newScores = prev.scores.map((s) =>
-                s.id === updated.id ? updated : s,
-              );
-              newScores.sort((a, b) => b.total_score - a.total_score);
-              return { ...prev, scores: newScores };
-            }
-            if (payload.eventType === 'DELETE') {
-              return {
-                ...prev,
-                scores: prev.scores.filter(
-                  (s) => s.id !== (payload.old as Score).id,
-                ),
-              };
-            }
-            return prev;
-          });
-        },
-      )
-      .subscribe();
+    loadEntries();
+    const interval = window.setInterval(loadEntries, 1500);
 
     return () => {
-      channel.unsubscribe();
+      cancelled = true;
+      window.clearInterval(interval);
     };
-  }, [gameSessionId]);
+  }, [gameSessionId, participantId]);
 
   return state;
 }

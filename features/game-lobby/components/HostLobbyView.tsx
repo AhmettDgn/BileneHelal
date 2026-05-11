@@ -65,22 +65,22 @@ export function HostLobbyView({
 
   return (
     <div className="space-y-6">
-      <div className="text-center">
-        <p className="text-sm text-slate-500">Quiz</p>
-        <h2 className="text-2xl font-semibold text-slate-950">{quizTitle}</h2>
-        <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">
+      <div className="px-1 text-center">
+        <p className="text-sm text-slate-400">Quiz</p>
+        <h2 className="text-xl font-semibold text-white sm:text-2xl">{quizTitle}</h2>
+        <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-500">
           {totalQuestions} soru hazir
         </p>
       </div>
 
       {subscriptionError && (
-        <p className="text-center text-sm text-red-600">
+        <p className="text-center text-sm text-rose-300">
           Katilimci bilgisi yuklenemedi: {subscriptionError.message}
         </p>
       )}
 
       {actionError && (
-        <p className="text-center text-sm text-red-600">{actionError}</p>
+        <p className="text-center text-sm text-rose-300">{actionError}</p>
       )}
 
       <LobbyRoom

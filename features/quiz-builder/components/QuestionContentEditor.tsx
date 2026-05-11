@@ -1,6 +1,5 @@
 /**
- * Quiz Builder Kingdom — QuestionContentEditor (Dumb UI, orta panel)
- * Aktif sorunun metni ve 4 seçeneğini düzenler. Süre/puan/sil sağ panelde.
+ * QuestionContentEditor - aktif sorunun icerigi ve secenekleri.
  */
 
 'use client';
@@ -27,40 +26,41 @@ export function QuestionContentEditor({
   };
 
   return (
-    <div className="bg-white border rounded-lg p-6 space-y-5 h-full">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-slate-950">
-          Soru {index + 1}
-        </h3>
-        <span className="text-xs text-muted-foreground">
-          Doğru cevabı yanındaki radio ile işaretle
+    <div className="theme-panel h-full space-y-5 rounded-[24px] border border-slate-800 p-4 text-slate-100 sm:p-6">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <h3 className="text-lg font-semibold text-white">Soru {index + 1}</h3>
+        <span className="text-xs text-slate-400">
+          Dogru cevabi yanindaki radio ile isaretle
         </span>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor={`question-${index}-text`}>Soru Metni</Label>
+        <Label htmlFor={`question-${index}-text`} className="text-slate-300">
+          Soru Metni
+        </Label>
         <Input
           id={`question-${index}-text`}
           value={question.text}
           onChange={(e) => onChange({ text: e.target.value })}
-          placeholder="Sorunun tamamını yaz..."
+          placeholder="Sorunun tamamini yaz..."
           required
-          className="h-12 text-base"
+          className="h-12 rounded-2xl border-slate-700 bg-slate-950/70 text-base text-slate-100 placeholder:text-slate-500"
         />
       </div>
 
       <div className="space-y-3">
-        <Label>Seçenekler</Label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Label className="text-slate-300">Secenekler</Label>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {question.options.map((option, optionIdx) => {
             const isCorrect = question.correctOptionIndex === optionIdx;
+
             return (
               <label
                 key={optionIdx}
-                className={`flex items-center gap-3 rounded-lg border px-3 py-2 cursor-pointer transition-colors ${
+                className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition-colors ${
                   isCorrect
-                    ? 'border-emerald-400 bg-emerald-50'
-                    : 'border-slate-200 bg-white hover:bg-slate-50'
+                    ? 'border-emerald-400/60 bg-emerald-400/12'
+                    : 'border-slate-700 bg-slate-950/35 hover:bg-slate-900/60'
                 }`}
               >
                 <input
@@ -69,14 +69,14 @@ export function QuestionContentEditor({
                   checked={isCorrect}
                   onChange={() => onChange({ correctOptionIndex: optionIdx })}
                   className="h-4 w-4 text-emerald-600"
-                  aria-label={`Seçenek ${optionIdx + 1} doğru cevap`}
+                  aria-label={`Secenek ${optionIdx + 1} dogru cevap`}
                 />
                 <Input
                   value={option}
                   onChange={(e) => updateOption(optionIdx, e.target.value)}
-                  placeholder={`Seçenek ${optionIdx + 1}`}
+                  placeholder={`Secenek ${optionIdx + 1}`}
                   required
-                  className="border-0 bg-transparent focus-visible:ring-0 px-0 h-9"
+                  className="h-9 border-0 bg-transparent px-0 text-slate-100 placeholder:text-slate-500 focus-visible:ring-0"
                 />
               </label>
             );

@@ -1,25 +1,18 @@
 /**
- * Game Lobby Kingdom — Server Actions
- * Oyun oluşturma, oyuncu katılımı, oyun başlatma
+ * Game Lobby Kingdom - oyun olusturma, katilim ve baslatma akislari.
  */
 
 'use server';
 
 import { createServerClient } from '@/lib/supabase/server';
-import { generatePin } from '@/lib/utils';
 import type { Tables } from '@/lib/supabase/database.types';
+import { generatePin } from '@/lib/utils';
 
 interface JoinGameRpcResult {
   participant: Tables<'participants'>;
   game_session: Tables<'game_sessions'>;
 }
 
-/**
- * Yeni oyun oturumu oluşturur (host için).
- * - Quiz sahipliğini doğrular.
- * - Soru sayısını DB'den hesaplar; boş quiz başlatılamaz.
- * - 6 haneli PIN üretir, status 'waiting' olarak başlar.
- */
 export async function createGameSession(quizId: string) {
   const supabase = await createServerClient();
   const {
@@ -27,7 +20,7 @@ export async function createGameSession(quizId: string) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new Error('Giriş yapmanız gerekir');
+    throw new Error('Giris yapmaniz gerekir');
   }
 
   const { data: quiz, error: quizError } = await supabase
@@ -37,11 +30,11 @@ export async function createGameSession(quizId: string) {
     .single();
 
   if (quizError || !quiz) {
-    throw new Error('Quiz bulunamadı');
+    throw new Error('Quiz bulunamadi');
   }
 
   if (quiz.owner_id !== user.id) {
-    throw new Error('Bu quiz için oyun başlatma yetkiniz yok');
+    throw new Error('Bu quiz icin oyun baslatma yetkiniz yok');
   }
 
   const { count, error: countError } = await supabase
@@ -50,13 +43,13 @@ export async function createGameSession(quizId: string) {
     .eq('quiz_id', quizId);
 
   if (countError) {
-    throw new Error(`Soru sayısı hesaplanamadı: ${countError.message}`);
+    throw new Error(`Soru sayisi hesaplanamadi: ${countError.message}`);
   }
 
   const totalQuestions = count ?? 0;
 
   if (totalQuestions === 0) {
-    throw new Error('Soru içermeyen quiz başlatılamaz');
+    throw new Error('Soru icermeyen quiz baslatilamaz');
   }
 
   const gamePin = generatePin();
@@ -69,39 +62,35 @@ export async function createGameSession(quizId: string) {
       game_pin: gamePin,
       status: 'waiting',
       current_question_index: 0,
+      current_phase: 'question',
       total_questions: totalQuestions,
     })
     .select()
     .single();
 
   if (error) {
-    throw new Error(`Oyun oturumu oluşturulamadı: ${error.message}`);
+    throw new Error(`Oyun oturumu olusturulamadi: ${error.message}`);
   }
 
   return data;
 }
 
-/**
- * Oyuncunun PIN ile oyuna katılmasını sağlar.
- * SECURITY DEFINER `join_game_session` RPC'si üzerinden çalışır:
- * RLS bypass + sunucu tarafı PIN/durum/isim doğrulaması tek noktada yapılır.
- */
-export async function joinGameSession(gamePin: string, displayName: string) {
+export async function joinGameSession(gamePin: string, displayName?: string) {
   const supabase = await createServerClient();
 
   const { data, error } = await supabase.rpc('join_game_session', {
     p_game_pin: gamePin,
-    p_display_name: displayName,
+    p_display_name: displayName ?? null,
   });
 
   if (error) {
-    throw new Error(`Oyuna katılma başarısız: ${error.message}`);
+    throw new Error(`Oyuna katilma basarisiz: ${error.message}`);
   }
 
   const result = data as unknown as JoinGameRpcResult | null;
 
   if (!result || !result.participant || !result.game_session) {
-    throw new Error('Oyuna katılma başarısız: beklenmeyen yanıt');
+    throw new Error('Oyuna katilma basarisiz: beklenmeyen yanit');
   }
 
   return {
@@ -110,11 +99,6 @@ export async function joinGameSession(gamePin: string, displayName: string) {
   };
 }
 
-/**
- * Katılımcının görünen adını günceller.
- * SECURITY DEFINER `update_participant_name` RPC'si üzerinden çalışır:
- * sahiplik kontrolü ve aynı oyunda eşsizlik DB tarafında zorlanır.
- */
 export async function updateParticipantName(
   participantId: string,
   displayName: string,
@@ -133,46 +117,64 @@ export async function updateParticipantName(
   const result = data as unknown as Tables<'participants'> | null;
 
   if (!result) {
-    throw new Error('Katılımcı bilgisi alınamadı');
+    throw new Error('Katilimci bilgisi alinamadi');
   }
 
   return result;
 }
 
-/**
- * Oyun başlatır (sadece host).
- */
 export async function startGameSession(gameSessionId: string) {
   const supabase = await createServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Host yetkisini doğrula
   const { data: session, error: checkError } = await supabase
     .from('game_sessions')
-    .select('host_id')
+    .select('host_id, quiz_id')
     .eq('id', gameSessionId)
     .single();
 
   if (checkError || session?.host_id !== user?.id) {
-    throw new Error('Sadece host oyunu başlatabilir');
+    throw new Error('Sadece host oyunu baslatabilir');
   }
 
-  // Oyun durumunu güncelle
+  const { data: orderedQuestions, error: questionError } = await supabase
+    .from('questions')
+    .select('id, time_limit_seconds')
+    .eq('quiz_id', session.quiz_id)
+    .order('order', { ascending: true })
+    .order('created_at', { ascending: true });
+
+  const firstQuestion = orderedQuestions?.[0] ?? null;
+
+  if (questionError || !firstQuestion) {
+    throw new Error('Ilk soru bilgisi bulunamadi');
+  }
+
+  const now = new Date().toISOString();
+  const phaseEndsAt = new Date(
+    Date.now() + firstQuestion.time_limit_seconds * 1000,
+  ).toISOString();
+
   const { data, error } = await supabase
     .from('game_sessions')
     .update({
       status: 'in_progress',
-      started_at: new Date().toISOString(),
+      current_phase: 'question',
+      active_question_id: firstQuestion.id,
+      started_at: now,
+      phase_started_at: now,
+      phase_ends_at: phaseEndsAt,
       current_question_index: 0,
+      ended_at: null,
     })
     .eq('id', gameSessionId)
     .select()
     .single();
 
   if (error) {
-    throw new Error(`Oyun başlatma başarısız: ${error.message}`);
+    throw new Error(`Oyun baslatma basarisiz: ${error.message}`);
   }
 
   return data;

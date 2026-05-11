@@ -1,6 +1,6 @@
 /**
  * Game Lobby Kingdom - LobbyRoom
- * Host tarafindaki bekleme ekranini animasyonlu olarak gosterir.
+ * Host tarafindaki bekleme ekranini neon temali olarak gosterir.
  */
 
 'use client';
@@ -32,66 +32,66 @@ export function LobbyRoom({
   isStarting,
 }: LobbyRoomProps) {
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6">
-      <section className="relative overflow-hidden rounded-[30px] border border-slate-200 bg-[linear-gradient(135deg,#0f172a_0%,#172554_50%,#0f172a_100%)] px-6 py-8 text-white shadow-[0_30px_80px_-50px_rgba(15,23,42,0.8)] sm:px-8">
+    <div className="mx-auto w-full max-w-6xl space-y-6">
+      <section className="theme-panel neon-cyan relative overflow-hidden rounded-[24px] border px-4 py-4 text-white sm:rounded-[28px] sm:px-6 sm:py-5 lg:px-7">
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute left-8 top-8 h-28 w-28 rounded-full bg-sky-400/20 blur-3xl" />
-          <div className="absolute bottom-0 right-10 h-32 w-32 rounded-full bg-indigo-400/20 blur-3xl" />
+          <div className="absolute left-8 top-8 h-28 w-28 rounded-full bg-cyan-400/12 blur-3xl" />
+          <div className="absolute bottom-0 right-10 h-32 w-32 rounded-full bg-fuchsia-400/10 blur-3xl" />
+          <div className="theme-dot-grid absolute inset-0 opacity-20" />
         </div>
 
-        <div className="relative grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="relative grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_320px] lg:items-start">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-sky-200">
+            <p className="accent-text-cyan text-[11px] font-semibold uppercase tracking-[0.28em]">
               Bekleme odasi
             </p>
-            <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-              Oyuncular lobiye dusuyor, oyun baslamaya hazirlaniyor.
+            <h1 className="mt-2 text-xl font-bold tracking-tight text-white sm:text-2xl">
+              Lobi hazir, oyuncular toplanıyor.
             </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
-              Katilan herkes ekranda anlik gorunur. Oyuncu sayisi yeterli oldugunda
-              tek tusla oyunu baslatabilirsin.
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
+              Oyuncular katildikca liste anlik guncellenir. Hazir oldugunda oyunu hemen baslatabilirsin.
             </p>
 
-            <div className="mt-6 flex flex-wrap gap-3">
-              <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur">
-                <p className="text-[11px] uppercase tracking-[0.22em] text-slate-300">
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="theme-chip neon-cyan rounded-2xl px-4 py-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-slate-400">
                   PIN
                 </p>
-                <p className="mt-1 font-mono text-3xl font-bold tracking-[0.24em]">
+                <p className="mt-1 break-all font-mono text-2xl font-bold tracking-[0.16em] text-cyan-100 sm:text-3xl sm:tracking-[0.24em]">
                   {gamePin}
                 </p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur">
-                <p className="text-[11px] uppercase tracking-[0.22em] text-slate-300">
+              <div className="theme-chip neon-pink rounded-2xl px-4 py-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-slate-400">
                   Hazir oyuncu
                 </p>
-                <p className="mt-1 text-3xl font-bold">{participantCount}</p>
+                <p className="mt-1 text-3xl font-bold text-fuchsia-100">{participantCount}</p>
               </div>
             </div>
 
-            <div className="mt-6 flex items-center gap-3 text-sm text-slate-200">
+            <div className="mt-4 flex flex-wrap items-start gap-3 text-sm text-slate-200">
               <span className="relative flex h-3 w-3">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
-                <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-400" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-300 opacity-70" />
+                <span className="relative inline-flex h-3 w-3 rounded-full bg-cyan-300" />
               </span>
               Katilan oyuncular anlik olarak ekrana ekleniyor.
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-white/10 bg-white/10 p-5 backdrop-blur-xl">
-            <div className="mb-5 flex items-center justify-between">
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.22em] text-slate-300">
+          <div className="theme-panel-soft rounded-[24px] border p-4">
+            <div className="mb-4 flex flex-col gap-4 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
+              <div className="min-w-0">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-slate-400">
                   Oyun durumu
                 </p>
-                <p className="mt-1 text-lg font-semibold">
+                <p className="mt-1 text-base font-semibold text-white">
                   {participantCount > 0 ? 'Hazir bekleme' : 'Oyuncu bekleniyor'}
                 </p>
               </div>
-              <div className="relative flex h-16 w-16 items-center justify-center">
-                <span className="absolute inset-0 rounded-full border border-sky-300/30 animate-[lobby-pulse_2.6s_ease-out_infinite]" />
-                <span className="absolute inset-2 rounded-full border border-sky-200/35 animate-[lobby-pulse_2.6s_ease-out_0.2s_infinite]" />
-                <span className="relative rounded-full bg-white/15 px-3 py-2 text-sm font-semibold">
+              <div className="relative flex h-16 w-16 items-center justify-center self-start min-[420px]:self-auto">
+                <span className="absolute inset-0 rounded-full border border-cyan-300/30 animate-[lobby-pulse_2.6s_ease-out_infinite]" />
+                <span className="absolute inset-2 rounded-full border border-fuchsia-300/25 animate-[lobby-pulse_2.6s_ease-out_0.2s_infinite]" />
+                <span className="relative rounded-full bg-cyan-300/10 px-3 py-2 text-sm font-semibold text-cyan-100">
                   LIVE
                 </span>
               </div>
@@ -102,12 +102,12 @@ export function LobbyRoom({
                 type="button"
                 onClick={onStartGame}
                 disabled={isStarting || participantCount === 0}
-                className="h-12 w-full rounded-2xl bg-white text-slate-950 hover:bg-slate-100"
+                className="neon-cyan h-12 w-full rounded-2xl"
               >
                 {isStarting ? 'Oyun baslatiliyor...' : 'Oyunu Baslat'}
               </Button>
             ) : (
-              <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-4 text-sm text-slate-200">
+              <div className="theme-chip rounded-2xl px-4 py-4 text-sm text-slate-200">
                 Host oyunu baslatinca soru ekranina otomatik gececeksin.
               </div>
             )}
@@ -115,15 +115,15 @@ export function LobbyRoom({
         </div>
       </section>
 
-      <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_-52px_rgba(15,23,42,0.35)]">
-        <div className="mb-5 flex items-center justify-between gap-3">
+      <section className="theme-panel-soft rounded-[28px] border p-5 sm:p-6 lg:p-7">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-slate-950">Lobidekiler</h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <h2 className="text-xl font-semibold text-white">Lobidekiler</h2>
+            <p className="mt-1 text-sm text-slate-400">
               Yeni katilan oyuncular yumusak bir giris animasyonuyla gorunur.
             </p>
           </div>
-          <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+          <div className="theme-chip w-fit rounded-full px-3 py-1 text-xs font-medium">
             {participantCount} hazir oyuncu
           </div>
         </div>

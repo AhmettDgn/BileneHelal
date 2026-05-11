@@ -1,11 +1,13 @@
 /**
- * Game Lobby Kingdom — useLobbySubscription Hook
- * Supabase Presence ile canlı oyuncu listesi ve DB Changes ile katılımcı güncellemeleri
+ * Game Lobby Kingdom - useLobbySubscription Hook
+ * Lobi katilimcilarini RPC ile tek kaynakli sekilde yukler ve degisikliklerde
+ * snapshot'i yeniden ceker.
  */
 
 'use client';
 
 import { useEffect, useState } from 'react';
+
 import { createBrowserClient } from '@/lib/supabase/client';
 import type { Tables } from '@/lib/supabase/database.types';
 
@@ -18,12 +20,9 @@ interface LobbySubscriptionState {
   error: Error | null;
 }
 
-/**
- * Oyun lobisinde canlı katılımcı listesini takip eder.
- * - Presence: oyuncuların çevrimiçi durumu
- * - Postgres Changes: yeni katılımcılar/ayrılmalar
- */
-export function useLobbySubscription(gameSessionId: string): LobbySubscriptionState {
+export function useLobbySubscription(
+  gameSessionId: string,
+): LobbySubscriptionState {
   const [state, setState] = useState<LobbySubscriptionState>({
     participants: [],
     onlineCount: 0,
@@ -33,87 +32,85 @@ export function useLobbySubscription(gameSessionId: string): LobbySubscriptionSt
 
   useEffect(() => {
     const supabase = createBrowserClient();
+    let isMounted = true;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let authSubscription: { unsubscribe: () => void } | null = null;
 
-    // Mevcut katılımcıları ilk olarak yükle
     const loadParticipants = async () => {
       try {
-        const { data, error } = await supabase
-          .from('participants')
-          .select('*')
-          .eq('game_session_id', gameSessionId);
+        const { data, error } = await supabase.rpc('get_lobby_participants', {
+          p_game_session_id: gameSessionId,
+        });
 
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
 
-        setState((prev) => ({
-          ...prev,
-          participants: data || [],
-          onlineCount: (data || []).filter((p) => p.is_online).length,
+        if (!isMounted) {
+          return;
+        }
+
+        const participants = (data || []) as Participant[];
+
+        setState({
+          participants,
+          onlineCount: participants.filter((participant) => participant.is_online)
+            .length,
           isLoading: false,
-        }));
+          error: null,
+        });
       } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
         setState((prev) => ({
           ...prev,
-          error: error instanceof Error ? error : new Error('Bilinmeyen hata'),
           isLoading: false,
+          error: error instanceof Error ? error : new Error('Bilinmeyen hata'),
         }));
       }
     };
 
-    loadParticipants();
+    const initialize = async () => {
+      await supabase.auth.getSession();
+      if (!isMounted) {
+        return;
+      }
 
-    // Postgres Changes ile katılımcı güncellemeleri dinle
-    const channel = supabase
-      .channel(`lobby:${gameSessionId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'participants',
-          filter: `game_session_id=eq.${gameSessionId}`,
-        },
-        (payload) => {
-          setState((prev) => {
-            if (payload.eventType === 'INSERT') {
-              return {
-                ...prev,
-                participants: [...prev.participants, payload.new as Participant],
-                onlineCount: prev.onlineCount + 1,
-              };
-            }
-            if (payload.eventType === 'DELETE') {
-              return {
-                ...prev,
-                participants: prev.participants.filter(
-                  (p) => p.id !== (payload.old as Participant).id,
-                ),
-                onlineCount: prev.onlineCount - 1,
-              };
-            }
-            if (payload.eventType === 'UPDATE') {
-              const updated = payload.new as Participant;
-              const wasOnline = prev.participants.find(
-                (p) => p.id === updated.id,
-              )?.is_online;
+      await loadParticipants();
 
-              return {
-                ...prev,
-                participants: prev.participants.map((p) =>
-                  p.id === updated.id ? updated : p,
-                ),
-                onlineCount: wasOnline !== updated.is_online
-                  ? prev.onlineCount + (updated.is_online ? 1 : -1)
-                  : prev.onlineCount,
-              };
-            }
-            return prev;
-          });
-        },
-      )
-      .subscribe();
+      if (!isMounted) {
+        return;
+      }
+
+      channel = supabase
+        .channel(`lobby:${gameSessionId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'participants',
+            filter: `game_session_id=eq.${gameSessionId}`,
+          },
+          () => {
+            void loadParticipants();
+          },
+        )
+        .subscribe();
+
+      authSubscription = supabase.auth.onAuthStateChange(() => {
+        void loadParticipants();
+      }).data.subscription;
+    };
+
+    void initialize();
 
     return () => {
-      channel.unsubscribe();
+      isMounted = false;
+      authSubscription?.unsubscribe();
+      channel?.unsubscribe();
     };
   }, [gameSessionId]);
 

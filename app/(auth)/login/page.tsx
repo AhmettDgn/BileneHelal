@@ -30,7 +30,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+    <div className="flex min-h-[calc(100vh-12rem)] items-center justify-center py-6">
       <LoginForm onSubmit={handleSubmit} isLoading={isLoading} error={error} />
     </div>
   );

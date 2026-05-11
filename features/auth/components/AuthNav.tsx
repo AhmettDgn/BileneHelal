@@ -14,22 +14,40 @@ import { Button } from '@/components/ui/button';
 import { signOut } from '@/features/auth/actions';
 import { createBrowserClient } from '@/lib/supabase/client';
 
-export function AuthNav() {
+export interface AuthNavUser {
+  email: string | null;
+  displayName: string;
+}
+
+interface AuthNavProps {
+  initialUser: AuthNavUser | null;
+}
+
+const mapUser = (user: User | null): AuthNavUser | null => {
+  if (!user) {
+    return null;
+  }
+
+  return {
+    email: user.email ?? null,
+    displayName:
+      typeof user.user_metadata?.display_name === 'string'
+        ? user.user_metadata.display_name
+        : user.email ?? 'Kullanici',
+  };
+};
+
+export function AuthNav({ initialUser }: AuthNavProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<AuthNavUser | null>(initialUser);
 
   useEffect(() => {
     const supabase = createBrowserClient();
 
-    /**
-     * Tarayicidaki mevcut auth oturumunu yukler.
-     */
     const loadSession = async () => {
       const { data } = await supabase.auth.getSession();
-      setUser(data.session?.user ?? null);
-      setIsLoading(false);
+      setUser(mapUser(data.session?.user ?? null));
     };
 
     loadSession();
@@ -37,8 +55,7 @@ export function AuthNav() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setIsLoading(false);
+      setUser(mapUser(session?.user ?? null));
     });
 
     return () => {
@@ -54,52 +71,41 @@ export function AuthNav() {
     });
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center gap-2">
-        <div className="h-9 w-24 animate-pulse rounded-md bg-slate-200" />
-        <div className="h-9 w-24 animate-pulse rounded-md bg-slate-200" />
-      </div>
-    );
-  }
-
   if (!user) {
     return (
-      <div className="flex items-center gap-2">
-        <Button asChild variant="ghost">
+      <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+        <Button asChild variant="ghost" className="w-full text-slate-200 hover:bg-cyan-400/10 hover:text-cyan-200 sm:w-auto">
           <Link href="/login">Giris Yap</Link>
         </Button>
-        <Button asChild>
+        <Button asChild className="neon-cyan w-full sm:w-auto">
           <Link href="/register">Kayit Ol</Link>
         </Button>
       </div>
     );
   }
 
-  const displayName =
-    typeof user.user_metadata?.display_name === 'string'
-      ? user.user_metadata.display_name
-      : user.email ?? 'Kullanici';
-
   return (
-    <div className="flex items-center gap-3">
-      <div className="hidden text-right sm:block">
-        <p className="text-sm font-medium text-slate-900">{displayName}</p>
-        <p className="text-xs text-slate-500">{user.email}</p>
+    <div className="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
+      <div className="min-w-0 sm:text-right">
+        <p className="truncate text-sm font-medium text-slate-100">{user.displayName}</p>
+        <p className="truncate text-xs text-slate-400">{user.email}</p>
       </div>
 
-      <Button asChild variant="outline">
-        <Link href="/dashboard">Dashboard</Link>
-      </Button>
+      <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+        <Button asChild variant="outline" className="w-full border-cyan-300/20 bg-cyan-300/5 text-cyan-100 hover:bg-cyan-300/10 hover:text-cyan-50 sm:w-auto">
+          <Link href="/dashboard">Dashboard</Link>
+        </Button>
 
-      <Button
-        type="button"
-        variant="ghost"
-        onClick={handleSignOut}
-        disabled={isPending}
-      >
-        {isPending ? 'Cikis yapiliyor...' : 'Cikis Yap'}
-      </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          className="w-full text-slate-200 hover:bg-fuchsia-400/10 hover:text-fuchsia-200 sm:w-auto"
+          onClick={handleSignOut}
+          disabled={isPending}
+        >
+          {isPending ? 'Cikis yapiliyor...' : 'Cikis Yap'}
+        </Button>
+      </div>
     </div>
   );
 }

@@ -1,10 +1,5 @@
 /**
- * Quiz Builder Kingdom — QuizBuilderForm (Dumb UI)
- * Üç panelli quiz oluşturma deneyimi:
- *  - Üst: quiz meta bar (başlık, açıklama, yayınla)
- *  - Sol: soru listesi + sıralama + ekleme (QuestionListPanel)
- *  - Orta: aktif sorunun içeriği (QuestionContentEditor)
- *  - Sağ: aktif sorunun ayarları (QuestionSettingsPanel)
+ * QuizBuilderForm - yeni ve duzenleme akisi icin ortak editor.
  */
 
 'use client';
@@ -32,7 +27,14 @@ const createEmptyQuestion = (): QuestionDraft => ({
   options: ['', '', '', ''],
 });
 
-interface QuizBuilderSubmitData {
+export interface QuizBuilderSubmitData {
+  title: string;
+  description: string | null;
+  questions: QuestionDraft[];
+  isPublished: boolean;
+}
+
+export interface QuizBuilderInitialData {
   title: string;
   description: string | null;
   questions: QuestionDraft[];
@@ -43,19 +45,28 @@ interface QuizBuilderFormProps {
   onSubmit: (data: QuizBuilderSubmitData) => Promise<void>;
   isLoading?: boolean;
   error?: string | null;
+  initialData?: QuizBuilderInitialData;
+  submitLabel?: string;
 }
 
 export function QuizBuilderForm({
   onSubmit,
   isLoading,
   error,
+  initialData,
+  submitLabel,
 }: QuizBuilderFormProps) {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [isPublished, setIsPublished] = useState(false);
-  const [questions, setQuestions] = useState<QuestionDraft[]>([
-    createEmptyQuestion(),
-  ]);
+  const [title, setTitle] = useState(initialData?.title ?? '');
+  const [description, setDescription] = useState(initialData?.description ?? '');
+  const [isPublished, setIsPublished] = useState(initialData?.isPublished ?? false);
+  const [questions, setQuestions] = useState<QuestionDraft[]>(
+    initialData?.questions.length
+      ? initialData.questions.map((question) => ({
+          ...question,
+          options: [...question.options],
+        }))
+      : [createEmptyQuestion()],
+  );
   const [activeIndex, setActiveIndex] = useState(0);
 
   const safeActiveIndex = Math.min(activeIndex, questions.length - 1);
@@ -116,38 +127,44 @@ export function QuizBuilderForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <section className="bg-white border rounded-lg p-5">
+      <section className="theme-panel-soft rounded-[28px] border border-slate-800 p-4 text-slate-100 shadow-[0_18px_50px_rgba(8,15,35,0.28)] sm:p-5">
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-800 rounded text-sm">
+          <div className="mb-4 rounded-2xl border border-rose-400/25 bg-rose-400/10 p-3 text-sm text-rose-100">
             {error}
           </div>
         )}
 
-        <div className="grid gap-4 lg:grid-cols-[2fr_3fr_auto] lg:items-end">
+        <div className="grid gap-4 xl:grid-cols-[2fr_3fr_auto] xl:items-end">
           <div className="space-y-2">
-            <Label htmlFor="quiz-title">Quiz Başlığı</Label>
+            <Label htmlFor="quiz-title" className="text-slate-300">
+              Quiz Basligi
+            </Label>
             <Input
               id="quiz-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Örn: Genel Kültür Yarışması"
+              placeholder="Orn: Genel Kultur Yarismasi"
               required
               disabled={isLoading}
+              className="h-12 rounded-2xl border-slate-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-500"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="quiz-description">Açıklama (opsiyonel)</Label>
+            <Label htmlFor="quiz-description" className="text-slate-300">
+              Aciklama (opsiyonel)
+            </Label>
             <Input
               id="quiz-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Quiz hakkında kısa bir açıklama"
+              placeholder="Quiz hakkinda kisa bir aciklama"
               disabled={isLoading}
+              className="h-12 rounded-2xl border-slate-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-500"
             />
           </div>
 
-          <label className="flex items-center gap-2 lg:pb-2">
+          <label className="flex items-center gap-2 text-slate-300 xl:pb-2">
             <input
               type="checkbox"
               checked={isPublished}
@@ -155,12 +172,12 @@ export function QuizBuilderForm({
               disabled={isLoading}
               className="h-4 w-4"
             />
-            <span className="text-sm">Yayınla</span>
+            <span className="text-sm">Yayinla</span>
           </label>
         </div>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)_300px] items-stretch">
+      <section className="grid items-stretch gap-4 xl:grid-cols-[260px_minmax(0,1fr)_300px]">
         <div className="lg:min-h-[480px]">
           <QuestionListPanel
             questions={questions}
@@ -190,21 +207,22 @@ export function QuizBuilderForm({
         </div>
       </section>
 
-      <div className="flex gap-3 sticky bottom-4 bg-white border rounded-lg p-4 shadow-lg">
+      <div className="theme-panel sticky bottom-3 z-20 flex flex-col gap-3 rounded-[24px] border border-slate-800 p-3 shadow-[0_20px_60px_rgba(8,15,35,0.35)] backdrop-blur sm:bottom-4 sm:flex-row sm:p-4">
         <Button
           type="submit"
           disabled={isLoading || questions.length === 0}
-          className="flex-1"
+          className="neon-cyan w-full sm:flex-1"
         >
-          {isLoading ? 'Kaydediliyor...' : 'Quizi Kaydet'}
+          {isLoading ? 'Kaydediliyor...' : submitLabel ?? 'Quizi Kaydet'}
         </Button>
         <Button
           type="button"
           variant="outline"
           onClick={() => window.history.back()}
           disabled={isLoading}
+          className="w-full border-slate-700 bg-slate-950/50 text-slate-100 hover:bg-slate-900 hover:text-white sm:w-auto"
         >
-          İptal
+          Iptal
         </Button>
       </div>
     </form>

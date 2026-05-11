@@ -1,6 +1,5 @@
 /**
- * Yeni Quiz Oluşturma Sayfası
- * Form state'i client'ta yönetilir, başarıyla kaydedilince /dashboard'a döner.
+ * Yeni quiz olusturma sayfasi.
  */
 
 'use client';
@@ -8,8 +7,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { QuizBuilderForm } from '@/features/quiz-builder/components/QuizBuilderForm';
 import { createQuiz } from '@/features/quiz-builder/actions';
+import { QuizBuilderForm } from '@/features/quiz-builder/components/QuizBuilderForm';
 
 export default function NewQuizPage() {
   const router = useRouter();
@@ -17,12 +16,12 @@ export default function NewQuizPage() {
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <div className="py-8 max-w-7xl mx-auto">
+    <div className="mx-auto max-w-7xl py-6 sm:py-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">Yeni Quiz Oluştur</h1>
-        <p className="text-muted-foreground mt-1">
-          Soldaki listeden soruları yönet, ortada içeriği düzenle, sağdaki
-          panelden ayarları belirle.
+        <h1 className="text-3xl font-bold text-white">Yeni Quiz Olustur</h1>
+        <p className="mt-1 text-slate-400">
+          Soldaki listeden sorulari yonet, ortada icerigi duzenle, sagdaki panelden
+          ayarlari belirle.
         </p>
       </div>
 

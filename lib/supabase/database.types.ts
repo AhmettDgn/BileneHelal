@@ -1,13 +1,11 @@
 /**
- * Supabase veritabanı şemasının TypeScript karşılığı.
- * Bu dosya TÜM tablo tipleri için tek doğruluk kaynağıdır.
- * @see https://supabase.com/docs/reference/javascript/schema
+ * Supabase veritabani semasinin TypeScript karsiligi.
+ * Bu dosya tum tablo ve fonksiyon tipleri icin tek dogruluk kaynagidir.
  */
 
 export type Database = {
   public: {
     Tables: {
-      /** Quiz meta verileri — sahip tarafından oluşturulur */
       quizzes: {
         Row: {
           id: string;
@@ -38,8 +36,6 @@ export type Database = {
         };
         Relationships: [];
       };
-
-      /** Quiz soruları ve seçenekleri */
       questions: {
         Row: {
           id: string;
@@ -83,8 +79,6 @@ export type Database = {
           },
         ];
       };
-
-      /** Oyun oturumları — "şu anda oynanıyor" */
       game_sessions: {
         Row: {
           id: string;
@@ -94,7 +88,11 @@ export type Database = {
           game_pin: string;
           status: 'waiting' | 'in_progress' | 'completed';
           current_question_index: number;
+          current_phase: 'question' | 'intermission';
+          active_question_id: string | null;
           started_at: string | null;
+          phase_started_at: string | null;
+          phase_ends_at: string | null;
           ended_at: string | null;
           total_questions: number;
         };
@@ -106,7 +104,11 @@ export type Database = {
           game_pin: string;
           status?: 'waiting' | 'in_progress' | 'completed';
           current_question_index?: number;
+          current_phase?: 'question' | 'intermission';
+          active_question_id?: string | null;
           started_at?: string | null;
+          phase_started_at?: string | null;
+          phase_ends_at?: string | null;
           ended_at?: string | null;
           total_questions: number;
         };
@@ -118,7 +120,11 @@ export type Database = {
           game_pin?: string;
           status?: 'waiting' | 'in_progress' | 'completed';
           current_question_index?: number;
+          current_phase?: 'question' | 'intermission';
+          active_question_id?: string | null;
           started_at?: string | null;
+          phase_started_at?: string | null;
+          phase_ends_at?: string | null;
           ended_at?: string | null;
           total_questions?: number;
         };
@@ -131,8 +137,6 @@ export type Database = {
           },
         ];
       };
-
-      /** Oyuncu katılım kaydı */
       participants: {
         Row: {
           id: string;
@@ -170,8 +174,6 @@ export type Database = {
           },
         ];
       };
-
-      /** Cevap kaydı — her oyuncu cevabı */
       answers: {
         Row: {
           id: string;
@@ -227,8 +229,6 @@ export type Database = {
           },
         ];
       };
-
-      /** Kümülatif puanlar — lider tahtası */
       scores: {
         Row: {
           id: string;
@@ -276,18 +276,96 @@ export type Database = {
         ];
       };
     };
-
     Views: Record<string, never>;
     Functions: {
-      /** Anon/auth kullanıcısını PIN ile bir oyuna katar (SECURITY DEFINER). */
       join_game_session: {
         Args: {
           p_game_pin: string;
-          p_display_name: string;
+          p_display_name: string | null;
         };
         Returns: unknown;
       };
-      /** Katılımcının görünen adını günceller; aynı oyunda eşsizliği zorlar. */
+      get_game_session_sync: {
+        Args: {
+          p_game_session_id: string;
+          p_participant_id?: string | null;
+        };
+        Returns: {
+          current_question_index: number;
+          game_status: 'waiting' | 'in_progress' | 'completed';
+          current_phase: 'question' | 'intermission';
+          active_question_id: string | null;
+          phase_started_at: string | null;
+          phase_ends_at: string | null;
+          total_questions: number;
+          has_next_question: boolean;
+        }[];
+      };
+      get_playable_game_state: {
+        Args: {
+          p_game_session_id: string;
+          p_participant_id?: string | null;
+        };
+        Returns: unknown;
+      };
+      submit_player_answer: {
+        Args: {
+          p_game_session_id: string;
+          p_participant_id: string;
+          p_question_id: string;
+          p_selected_option_index: number;
+          p_response_time_ms: number;
+        };
+        Returns: {
+          accepted: boolean;
+          already_answered: boolean;
+          locked_option_index: number;
+          points_earned: number;
+        }[];
+      };
+      get_leaderboard_entries: {
+        Args: {
+          p_game_session_id: string;
+          p_participant_id?: string | null;
+          p_limit?: number | null;
+        };
+        Returns: {
+          participant_id: string;
+          display_name: string;
+          total_score: number;
+          correct_answers: number;
+        }[];
+      };
+      sync_game_phase: {
+        Args: {
+          p_game_session_id: string;
+          p_participant_id?: string | null;
+        };
+        Returns: {
+          current_question_index: number;
+          game_status: 'waiting' | 'in_progress' | 'completed';
+          current_phase: 'question' | 'intermission';
+          active_question_id: string | null;
+          phase_started_at: string | null;
+          phase_ends_at: string | null;
+          total_questions: number;
+          has_next_question: boolean;
+        }[];
+      };
+      get_lobby_participants: {
+        Args: {
+          p_game_session_id: string;
+        };
+        Returns: {
+          id: string;
+          created_at: string;
+          game_session_id: string;
+          user_id: string | null;
+          display_name: string;
+          is_online: boolean;
+          last_seen: string | null;
+        }[];
+      };
       update_participant_name: {
         Args: {
           p_participant_id: string;
@@ -301,14 +379,11 @@ export type Database = {
   };
 };
 
-/** Tablo satır tipleri çıkarma */
 export type Tables<T extends keyof Database['public']['Tables']> =
   Database['public']['Tables'][T]['Row'];
 
-/** Tablo insert tipleri çıkarma */
 export type TablesInsert<T extends keyof Database['public']['Tables']> =
   Database['public']['Tables'][T]['Insert'];
 
-/** Tablo update tipleri çıkarma */
 export type TablesUpdate<T extends keyof Database['public']['Tables']> =
   Database['public']['Tables'][T]['Update'];

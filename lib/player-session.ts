@@ -11,6 +11,7 @@ export interface PlayerSession {
   participantId: string;
   gameSessionId: string;
   displayName: string;
+  isAuthenticated: boolean;
 }
 
 function buildKey(gamePin: string): string {
@@ -43,7 +44,12 @@ export function readPlayerSession(gamePin: string): PlayerSession | null {
       typeof parsed?.gameSessionId === 'string' &&
       typeof parsed?.displayName === 'string'
     ) {
-      return parsed;
+      return {
+        participantId: parsed.participantId,
+        gameSessionId: parsed.gameSessionId,
+        displayName: parsed.displayName,
+        isAuthenticated: parsed.isAuthenticated === true,
+      };
     }
   } catch {
     // bozuksa görmezden gel
