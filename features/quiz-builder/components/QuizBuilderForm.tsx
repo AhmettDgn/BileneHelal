@@ -127,16 +127,16 @@ export function QuizBuilderForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <section className="theme-panel-soft rounded-[28px] border border-slate-800 p-4 text-slate-100 shadow-[0_18px_50px_rgba(8,15,35,0.28)] sm:p-5">
+      <section className="theme-panel-soft rounded-[28px] border p-4 sm:p-5">
         {error && (
-          <div className="mb-4 rounded-2xl border border-rose-400/25 bg-rose-400/10 p-3 text-sm text-rose-100">
+          <div className="mb-4 rounded-2xl border border-destructive/25 bg-destructive/10 p-3 text-sm text-destructive">
             {error}
           </div>
         )}
 
         <div className="grid gap-4 xl:grid-cols-[2fr_3fr_auto] xl:items-end">
           <div className="space-y-2">
-            <Label htmlFor="quiz-title" className="text-slate-300">
+            <Label htmlFor="quiz-title" className="text-muted-foreground">
               Quiz Basligi
             </Label>
             <Input
@@ -146,12 +146,12 @@ export function QuizBuilderForm({
               placeholder="Orn: Genel Kultur Yarismasi"
               required
               disabled={isLoading}
-              className="h-12 rounded-2xl border-slate-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-500"
+              className="h-12 rounded-2xl"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="quiz-description" className="text-slate-300">
+            <Label htmlFor="quiz-description" className="text-muted-foreground">
               Aciklama (opsiyonel)
             </Label>
             <Input
@@ -160,11 +160,11 @@ export function QuizBuilderForm({
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Quiz hakkinda kisa bir aciklama"
               disabled={isLoading}
-              className="h-12 rounded-2xl border-slate-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-500"
+              className="h-12 rounded-2xl"
             />
           </div>
 
-          <label className="flex items-center gap-2 text-slate-300 xl:pb-2">
+          <label className="flex items-center gap-2 text-muted-foreground xl:pb-2">
             <input
               type="checkbox"
               checked={isPublished}
@@ -172,7 +172,7 @@ export function QuizBuilderForm({
               disabled={isLoading}
               className="h-4 w-4"
             />
-            <span className="text-sm">Yayinla</span>
+            <span className="text-sm text-foreground">Yayinla</span>
           </label>
         </div>
       </section>
@@ -207,11 +207,11 @@ export function QuizBuilderForm({
         </div>
       </section>
 
-      <div className="theme-panel sticky bottom-3 z-20 flex flex-col gap-3 rounded-[24px] border border-slate-800 p-3 shadow-[0_20px_60px_rgba(8,15,35,0.35)] backdrop-blur sm:bottom-4 sm:flex-row sm:p-4">
+      <div className="theme-panel sticky bottom-3 z-20 flex flex-col gap-3 rounded-[24px] border p-3 backdrop-blur sm:bottom-4 sm:flex-row sm:p-4">
         <Button
           type="submit"
           disabled={isLoading || questions.length === 0}
-          className="neon-cyan w-full sm:flex-1"
+          className="neon-cyan w-full bg-primary text-primary-foreground hover:bg-primary/90 sm:flex-1"
         >
           {isLoading ? 'Kaydediliyor...' : submitLabel ?? 'Quizi Kaydet'}
         </Button>
@@ -220,7 +220,7 @@ export function QuizBuilderForm({
           variant="outline"
           onClick={() => window.history.back()}
           disabled={isLoading}
-          className="w-full border-slate-700 bg-slate-950/50 text-slate-100 hover:bg-slate-900 hover:text-white sm:w-auto"
+          className="w-full border-border text-foreground hover:bg-muted sm:w-auto"
         >
           Iptal
         </Button>

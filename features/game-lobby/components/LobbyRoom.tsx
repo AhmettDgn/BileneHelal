@@ -1,6 +1,5 @@
 /**
  * Game Lobby Kingdom - LobbyRoom
- * Host tarafindaki bekleme ekranini neon temali olarak gosterir.
  */
 
 'use client';
@@ -33,10 +32,10 @@ export function LobbyRoom({
 }: LobbyRoomProps) {
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
-      <section className="theme-panel neon-cyan relative overflow-hidden rounded-[24px] border px-4 py-4 text-white sm:rounded-[28px] sm:px-6 sm:py-5 lg:px-7">
+      <section className="theme-panel neon-cyan relative overflow-hidden rounded-[24px] border px-4 py-4 sm:rounded-[28px] sm:px-6 sm:py-5 lg:px-7">
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute left-8 top-8 h-28 w-28 rounded-full bg-cyan-400/12 blur-3xl" />
-          <div className="absolute bottom-0 right-10 h-32 w-32 rounded-full bg-fuchsia-400/10 blur-3xl" />
+          <div className="absolute left-8 top-8 h-28 w-28 rounded-full bg-primary/12 blur-3xl" />
+          <div className="absolute bottom-0 right-10 h-32 w-32 rounded-full bg-secondary/10 blur-3xl" />
           <div className="theme-dot-grid absolute inset-0 opacity-20" />
         </div>
 
@@ -45,34 +44,34 @@ export function LobbyRoom({
             <p className="accent-text-cyan text-[11px] font-semibold uppercase tracking-[0.28em]">
               Bekleme odasi
             </p>
-            <h1 className="mt-2 text-xl font-bold tracking-tight text-white sm:text-2xl">
-              Lobi hazir, oyuncular toplanıyor.
+            <h1 className="mt-2 text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+              Lobi hazir, oyuncular toplaniyor.
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
               Oyuncular katildikca liste anlik guncellenir. Hazir oldugunda oyunu hemen baslatabilirsin.
             </p>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <div className="theme-chip neon-cyan rounded-2xl px-4 py-3">
-                <p className="text-[11px] uppercase tracking-[0.22em] text-slate-400">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
                   PIN
                 </p>
-                <p className="mt-1 break-all font-mono text-2xl font-bold tracking-[0.16em] text-cyan-100 sm:text-3xl sm:tracking-[0.24em]">
+                <p className="mt-1 break-all font-mono text-2xl font-bold tracking-[0.16em] text-primary sm:text-3xl sm:tracking-[0.24em]">
                   {gamePin}
                 </p>
               </div>
               <div className="theme-chip neon-pink rounded-2xl px-4 py-3">
-                <p className="text-[11px] uppercase tracking-[0.22em] text-slate-400">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
                   Hazir oyuncu
                 </p>
-                <p className="mt-1 text-3xl font-bold text-fuchsia-100">{participantCount}</p>
+                <p className="mt-1 text-3xl font-bold text-secondary">{participantCount}</p>
               </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap items-start gap-3 text-sm text-slate-200">
+            <div className="mt-4 flex flex-wrap items-start gap-3 text-sm text-muted-foreground">
               <span className="relative flex h-3 w-3">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-300 opacity-70" />
-                <span className="relative inline-flex h-3 w-3 rounded-full bg-cyan-300" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
+                <span className="relative inline-flex h-3 w-3 rounded-full bg-primary" />
               </span>
               Katilan oyuncular anlik olarak ekrana ekleniyor.
             </div>
@@ -81,17 +80,17 @@ export function LobbyRoom({
           <div className="theme-panel-soft rounded-[24px] border p-4">
             <div className="mb-4 flex flex-col gap-4 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
               <div className="min-w-0">
-                <p className="text-[11px] uppercase tracking-[0.22em] text-slate-400">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
                   Oyun durumu
                 </p>
-                <p className="mt-1 text-base font-semibold text-white">
+                <p className="mt-1 text-base font-semibold text-foreground">
                   {participantCount > 0 ? 'Hazir bekleme' : 'Oyuncu bekleniyor'}
                 </p>
               </div>
               <div className="relative flex h-16 w-16 items-center justify-center self-start min-[420px]:self-auto">
-                <span className="absolute inset-0 rounded-full border border-cyan-300/30 animate-[lobby-pulse_2.6s_ease-out_infinite]" />
-                <span className="absolute inset-2 rounded-full border border-fuchsia-300/25 animate-[lobby-pulse_2.6s_ease-out_0.2s_infinite]" />
-                <span className="relative rounded-full bg-cyan-300/10 px-3 py-2 text-sm font-semibold text-cyan-100">
+                <span className="absolute inset-0 rounded-full border border-primary/30 animate-[lobby-pulse_2.6s_ease-out_infinite]" />
+                <span className="absolute inset-2 rounded-full border border-secondary/25 animate-[lobby-pulse_2.6s_ease-out_0.2s_infinite]" />
+                <span className="relative rounded-full bg-primary/10 px-3 py-2 text-sm font-semibold text-primary">
                   LIVE
                 </span>
               </div>
@@ -102,12 +101,12 @@ export function LobbyRoom({
                 type="button"
                 onClick={onStartGame}
                 disabled={isStarting || participantCount === 0}
-                className="neon-cyan h-12 w-full rounded-2xl"
+                className="neon-cyan h-12 w-full rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 {isStarting ? 'Oyun baslatiliyor...' : 'Oyunu Baslat'}
               </Button>
             ) : (
-              <div className="theme-chip rounded-2xl px-4 py-4 text-sm text-slate-200">
+              <div className="theme-chip rounded-2xl px-4 py-4 text-sm text-foreground">
                 Host oyunu baslatinca soru ekranina otomatik gececeksin.
               </div>
             )}
@@ -118,8 +117,8 @@ export function LobbyRoom({
       <section className="theme-panel-soft rounded-[28px] border p-5 sm:p-6 lg:p-7">
         <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-white">Lobidekiler</h2>
-            <p className="mt-1 text-sm text-slate-400">
+            <h2 className="text-xl font-semibold text-foreground">Lobidekiler</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
               Yeni katilan oyuncular yumusak bir giris animasyonuyla gorunur.
             </p>
           </div>

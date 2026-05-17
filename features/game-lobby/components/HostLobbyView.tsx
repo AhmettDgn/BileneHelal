@@ -1,6 +1,5 @@
 /**
  * Game Lobby Kingdom - HostLobbyView
- * Host paneli icin canli ve animasyonlu lobi gorunumu.
  */
 
 'use client';
@@ -26,36 +25,27 @@ export function HostLobbyView({
   totalQuestions,
 }: HostLobbyViewProps) {
   const router = useRouter();
-  const {
-    participants,
-    onlineCount,
-    isLoading,
-    error: subscriptionError,
-  } = useLobbySubscription(gameSessionId);
+  const { participants, onlineCount, isLoading, error: subscriptionError } =
+    useLobbySubscription(gameSessionId);
   const [isPending, startTransition] = useTransition();
   const [actionError, setActionError] = useState<string | null>(null);
 
   const sortedParticipants = useMemo(() => {
     return [...participants].sort((a, b) => {
-      if (a.is_online !== b.is_online) {
-        return a.is_online ? -1 : 1;
-      }
+      if (a.is_online !== b.is_online) return a.is_online ? -1 : 1;
       return a.display_name.localeCompare(b.display_name, 'tr');
     });
   }, [participants]);
 
   const handleStart = async () => {
     setActionError(null);
-
     return new Promise<void>((resolve) => {
       startTransition(async () => {
         try {
           await startGameSession(gameSessionId);
           router.refresh();
         } catch (error) {
-          setActionError(
-            error instanceof Error ? error.message : 'Oyun baslatilamadi',
-          );
+          setActionError(error instanceof Error ? error.message : 'Oyun baslatilamadi');
         } finally {
           resolve();
         }
@@ -66,21 +56,21 @@ export function HostLobbyView({
   return (
     <div className="space-y-6">
       <div className="px-1 text-center">
-        <p className="text-sm text-slate-400">Quiz</p>
-        <h2 className="text-xl font-semibold text-white sm:text-2xl">{quizTitle}</h2>
-        <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-500">
+        <p className="text-sm text-muted-foreground">Quiz</p>
+        <h2 className="text-xl font-semibold text-foreground sm:text-2xl">{quizTitle}</h2>
+        <p className="mt-1 text-xs uppercase tracking-[0.18em] text-muted-foreground">
           {totalQuestions} soru hazir
         </p>
       </div>
 
       {subscriptionError && (
-        <p className="text-center text-sm text-rose-300">
+        <p className="text-center text-sm text-destructive">
           Katilimci bilgisi yuklenemedi: {subscriptionError.message}
         </p>
       )}
 
       {actionError && (
-        <p className="text-center text-sm text-rose-300">{actionError}</p>
+        <p className="text-center text-sm text-destructive">{actionError}</p>
       )}
 
       <LobbyRoom

@@ -18,8 +18,8 @@ export default function NewQuizPage() {
   return (
     <div className="mx-auto max-w-7xl py-6 sm:py-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-white">Yeni Quiz Olustur</h1>
-        <p className="mt-1 text-slate-400">
+        <h1 className="text-3xl font-bold text-foreground">Yeni Quiz Olustur</h1>
+        <p className="mt-1 text-muted-foreground">
           Soldaki listeden sorulari yonet, ortada icerigi duzenle, sagdaki panelden
           ayarlari belirle.
         </p>

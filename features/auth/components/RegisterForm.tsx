@@ -11,6 +11,7 @@ import { useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { GoogleSignInButton } from './GoogleSignInButton';
 
 interface RegisterFormProps {
   onSubmit: (
@@ -49,23 +50,23 @@ export function RegisterForm({ onSubmit, isLoading, error }: RegisterFormProps) 
   const displayedError = validationError ?? error;
 
   return (
-    <div className="theme-panel neon-pink mx-auto w-full max-w-md rounded-[24px] border p-4 text-slate-100 sm:rounded-[28px] sm:p-8">
-      <h1 className="mb-2 text-xl font-bold tracking-tight text-white sm:text-2xl">
+    <div className="theme-panel neon-pink mx-auto w-full max-w-md rounded-[24px] border p-4 text-foreground sm:rounded-[28px] sm:p-8">
+      <h1 className="mb-2 text-xl font-bold tracking-tight text-foreground sm:text-2xl">
         Kayit Ol
       </h1>
-      <p className="mb-6 text-sm leading-6 text-slate-300">
+      <p className="mb-6 text-sm leading-6 text-muted-foreground">
         BileneHalal&apos;a katil, quizlerini yayinla ve oyunculari hizla oyuna al.
       </p>
 
       {displayedError && (
-        <div className="mb-4 rounded-2xl border border-rose-400/25 bg-rose-400/10 p-3 text-sm text-rose-100">
+        <div className="mb-4 rounded-2xl border border-destructive/25 bg-destructive/10 p-3 text-sm text-destructive">
           {displayedError}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="displayName" className="text-slate-300">Gorunen Ad</Label>
+          <Label htmlFor="displayName" className="text-muted-foreground">Gorunen Ad</Label>
           <Input
             id="displayName"
             type="text"
@@ -74,12 +75,12 @@ export function RegisterForm({ onSubmit, isLoading, error }: RegisterFormProps) 
             onChange={(e) => setDisplayName(e.target.value)}
             required
             disabled={isLoading}
-            className="h-12 rounded-2xl border-slate-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-500"
+            className="h-12 rounded-2xl"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-slate-300">E-posta</Label>
+          <Label htmlFor="email" className="text-muted-foreground">E-posta</Label>
           <Input
             id="email"
             type="email"
@@ -88,12 +89,12 @@ export function RegisterForm({ onSubmit, isLoading, error }: RegisterFormProps) 
             onChange={(e) => setEmail(e.target.value)}
             required
             disabled={isLoading}
-            className="h-12 rounded-2xl border-slate-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-500"
+            className="h-12 rounded-2xl"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password" className="text-slate-300">Sifre</Label>
+          <Label htmlFor="password" className="text-muted-foreground">Sifre</Label>
           <Input
             id="password"
             type="password"
@@ -103,12 +104,12 @@ export function RegisterForm({ onSubmit, isLoading, error }: RegisterFormProps) 
             required
             minLength={6}
             disabled={isLoading}
-            className="h-12 rounded-2xl border-slate-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-500"
+            className="h-12 rounded-2xl"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="passwordConfirm" className="text-slate-300">Sifre Tekrar</Label>
+          <Label htmlFor="passwordConfirm" className="text-muted-foreground">Sifre Tekrar</Label>
           <Input
             id="passwordConfirm"
             type="password"
@@ -117,16 +118,24 @@ export function RegisterForm({ onSubmit, isLoading, error }: RegisterFormProps) 
             onChange={(e) => setPasswordConfirm(e.target.value)}
             required
             disabled={isLoading}
-            className="h-12 rounded-2xl border-slate-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-500"
+            className="h-12 rounded-2xl"
           />
         </div>
 
-        <Button type="submit" disabled={isLoading} className="neon-pink h-12 w-full rounded-2xl">
+        <Button type="submit" disabled={isLoading} className="neon-pink h-12 w-full rounded-2xl bg-secondary text-secondary-foreground hover:bg-secondary/90">
           {isLoading ? 'Kayit olunuyor...' : 'Kayit Ol'}
         </Button>
       </form>
 
-      <div className="mt-6 text-center text-sm text-slate-400">
+      <div className="relative my-6 flex items-center gap-3">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-xs text-muted-foreground">veya</span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
+
+      <GoogleSignInButton label="Google ile kayit ol" disabled={isLoading} />
+
+      <div className="mt-6 text-center text-sm text-muted-foreground">
         Zaten hesabin var mi?{' '}
         <Link href="/login" className="accent-text-pink font-medium hover:underline">
           Giris yap

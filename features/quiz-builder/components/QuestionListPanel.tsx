@@ -26,12 +26,12 @@ export function QuestionListPanel({
   onMove,
 }: QuestionListPanelProps) {
   return (
-    <aside className="theme-panel-soft flex h-full flex-col space-y-3 rounded-[24px] border border-slate-800 p-3 text-slate-100 sm:p-4">
+    <aside className="theme-panel-soft flex h-full flex-col space-y-3 rounded-[24px] border p-3 sm:p-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300">
+        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">
           Sorular
         </h3>
-        <span className="text-xs text-slate-400">{questions.length}</span>
+        <span className="text-xs text-muted-foreground">{questions.length}</span>
       </div>
 
       <ul className="flex-1 space-y-2 overflow-y-auto">
@@ -45,8 +45,8 @@ export function QuestionListPanel({
               <div
                 className={`group flex items-stretch gap-1 rounded-md border transition-colors ${
                   isActive
-                    ? 'border-cyan-400/60 bg-cyan-400/12 shadow-[0_10px_30px_rgba(34,211,238,0.15)]'
-                    : 'border-slate-700 bg-slate-950/35 hover:bg-slate-900/60'
+                    ? 'border-primary/50 bg-primary/10'
+                    : 'border-border bg-card hover:bg-muted/50'
                 }`}
               >
                 <button
@@ -57,7 +57,7 @@ export function QuestionListPanel({
                   <div className="flex items-center gap-2">
                     <span
                       className={`text-xs font-semibold ${
-                        isActive ? 'text-cyan-200' : 'text-slate-400'
+                        isActive ? 'text-primary' : 'text-muted-foreground'
                       }`}
                     >
                       Soru {index + 1}
@@ -72,20 +72,20 @@ export function QuestionListPanel({
                   </div>
                   <p
                     className={`mt-1 truncate text-sm ${
-                      preview ? 'text-slate-100' : 'italic text-slate-500'
+                      preview ? 'text-foreground' : 'italic text-muted-foreground'
                     }`}
                   >
                     {preview || 'Bos soru'}
                   </p>
                 </button>
 
-                <div className="flex flex-col border-l border-slate-700">
+                <div className="flex flex-col border-l border-border">
                   <button
                     type="button"
                     onClick={() => onMove(index, index - 1)}
                     disabled={index === 0}
                     aria-label="Yukari tasi"
-                    className="flex-1 px-2 text-slate-400 hover:text-white disabled:text-slate-600 disabled:hover:text-slate-600"
+                    className="flex-1 px-2 text-muted-foreground hover:text-foreground disabled:opacity-30"
                   >
                     ▲
                   </button>
@@ -94,7 +94,7 @@ export function QuestionListPanel({
                     onClick={() => onMove(index, index + 1)}
                     disabled={index === questions.length - 1}
                     aria-label="Asagi tasi"
-                    className="flex-1 border-t border-slate-700 px-2 text-slate-400 hover:text-white disabled:text-slate-600 disabled:hover:text-slate-600"
+                    className="flex-1 border-t border-border px-2 text-muted-foreground hover:text-foreground disabled:opacity-30"
                   >
                     ▼
                   </button>
@@ -110,7 +110,7 @@ export function QuestionListPanel({
         variant="outline"
         size="sm"
         onClick={onAdd}
-        className="w-full border-slate-700 bg-slate-950/50 text-slate-100 hover:bg-slate-900 hover:text-white"
+        className="w-full border-border text-foreground hover:bg-muted"
       >
         + Soru Ekle
       </Button>

@@ -47,44 +47,44 @@ export function JoinGameForm({
   };
 
   return (
-    <div className="theme-panel-soft rounded-[22px] border p-3 text-slate-100 sm:rounded-[24px] sm:p-4">
+    <div className="theme-panel-soft rounded-[22px] border p-3 sm:rounded-[24px] sm:p-4">
       <div className="mb-4">
         <p className="accent-text-cyan text-[11px] font-semibold uppercase tracking-[0.24em]">
-          Oyuncu girisi
+          Oyuncu girişi
         </p>
-        <h2 className="mt-2 text-lg font-bold tracking-tight text-white sm:text-xl">
-          Oyun PIN&apos;ini gir ve lobiye baglan
+        <h2 className="mt-2 text-lg font-bold tracking-tight text-foreground sm:text-xl">
+          Oyun PIN&apos;ini gir ve lobiye bağlan
         </h2>
-        <p className="mt-2 text-sm leading-6 text-slate-300">
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
           {isAuthenticated
-            ? 'Giris yaptigin hesapla otomatik eslesirsin. Bu oyuna kayitli gorunen adinla katilacaksin.'
-            : '6 haneli PIN ve gorunen adin yeterli. Zemin sakin kalir, odak ise PIN kutusunda ve katilim aksiyonunda toplanir.'}
+            ? 'Giriş yaptığın hesapla otomatik eşleşirsin. Bu oyuna kayıtlı görünen adınla katılacaksın.'
+            : '6 haneli PIN ve görünen adın yeterli. Zemin sakin kalır, odak ise PIN kutusunda ve katılım aksiyonunda toplanır.'}
         </p>
       </div>
 
       <div className="mb-4 grid grid-cols-1 gap-2 min-[420px]:grid-cols-3">
         <div className="theme-chip rounded-2xl px-3 py-2.5">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-            Giris
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            Giriş
           </p>
-          <p className="mt-1 text-sm font-medium text-slate-100">Hizli PIN</p>
+          <p className="mt-1 text-sm font-medium text-foreground">Hızlı PIN</p>
         </div>
         <div className="theme-chip rounded-2xl px-3 py-2.5">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-            Akis
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            Akış
           </p>
-          <p className="mt-1 text-sm font-medium text-slate-100">Canli lobi</p>
+          <p className="mt-1 text-sm font-medium text-foreground">Canlı lobi</p>
         </div>
-        <div className="theme-chip rounded-2xl px-3 py-2.5 neon-pink">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+        <div className="theme-chip neon-pink rounded-2xl px-3 py-2.5">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Durum
           </p>
-          <p className="mt-1 text-sm font-medium text-slate-100">Anlik gecis</p>
+          <p className="mt-1 text-sm font-medium text-foreground">Anlık geçiş</p>
         </div>
       </div>
 
       {error && (
-        <div className="mb-4 rounded-2xl border border-rose-400/25 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
+        <div className="mb-4 rounded-2xl border border-destructive/25 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       )}
@@ -93,7 +93,7 @@ export function JoinGameForm({
         <div className="space-y-2">
           <Label
             htmlFor="game-pin"
-            className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400"
+            className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground"
           >
             PIN Kodu
           </Label>
@@ -107,39 +107,39 @@ export function JoinGameForm({
             onChange={(e) => handlePinChange(e.target.value)}
             required
             disabled={isLoading}
-            className="neon-cyan h-13 rounded-2xl border-cyan-300/15 bg-slate-950/80 px-2 text-center font-mono text-lg tracking-[0.18em] text-cyan-100 placeholder:text-cyan-200/35 sm:h-14 sm:text-xl sm:tracking-[0.28em]"
+            className="neon-cyan h-13 rounded-2xl border-primary/20 bg-primary/5 px-2 text-center font-mono text-lg tracking-[0.18em] text-primary placeholder:text-primary/35 sm:h-14 sm:text-xl sm:tracking-[0.28em]"
             maxLength={6}
             autoComplete="off"
           />
         </div>
 
         {isAuthenticated ? (
-          <div className="rounded-2xl border border-cyan-300/15 bg-cyan-300/5 px-4 py-3 text-left">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-cyan-200">
-              Kullanilacak Ad
+          <div className="rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-left">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary">
+              Kullanılacak Ad
             </p>
-            <p className="mt-1 text-sm font-medium text-slate-100">
-              {initialDisplayName ?? 'Kayitli hesabinizdaki ad kullanilacak'}
+            <p className="mt-1 text-sm font-medium text-foreground">
+              {initialDisplayName ?? 'Kayıtlı hesabınızdaki ad kullanılacak'}
             </p>
           </div>
         ) : (
           <div className="space-y-2">
             <Label
               htmlFor="display-name"
-              className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400"
+              className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground"
             >
-              Gorunen Adin
+              Görünen Adın
             </Label>
             <Input
               id="display-name"
               type="text"
-              placeholder="Takma adin"
+              placeholder="Takma adın"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               required
               disabled={isLoading}
               maxLength={30}
-              className="h-11 rounded-2xl border-slate-700 bg-slate-950/65 text-slate-100 placeholder:text-slate-500"
+              className="h-11 rounded-2xl"
             />
           </div>
         )}
@@ -147,15 +147,15 @@ export function JoinGameForm({
         <Button
           type="submit"
           disabled={isLoading || !canSubmit}
-          className="neon-cyan h-11 w-full rounded-2xl text-sm font-semibold"
+          className="neon-cyan h-11 w-full rounded-2xl bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90"
         >
-          {isLoading ? 'Lobiye baglaniyor...' : 'Oyuna Katil'}
+          {isLoading ? 'Lobiye bağlanıyor...' : 'Oyuna Katıl'}
         </Button>
       </form>
 
-      <p className="mt-3 text-xs leading-5 text-slate-400">
-        PIN yalnizca rakam kabul eder. Gecersiz oyunlarda hata sakin bir panelde,
-        ana aksiyondan dikkat calmadan gosterilir.
+      <p className="mt-3 text-xs leading-5 text-muted-foreground">
+        PIN yalnızca rakam kabul eder. Geçersiz oyunlarda hata sakin bir panelde,
+        ana aksiyondan dikkat çalmadan gösterilir.
       </p>
     </div>
   );

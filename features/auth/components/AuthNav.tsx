@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 
 import { Button } from '@/components/ui/button';
-import { signOut } from '@/features/auth/actions';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { createBrowserClient } from '@/lib/supabase/client';
 
 export interface AuthNavUser {
@@ -24,16 +24,20 @@ interface AuthNavProps {
 }
 
 const mapUser = (user: User | null): AuthNavUser | null => {
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
+
+  const meta = user.user_metadata;
+  // E-posta kayıt: display_name | Google kayıt: full_name / name | fallback: email prefix
+  const displayName =
+    (typeof meta?.display_name === 'string' && meta.display_name) ||
+    (typeof meta?.full_name === 'string' && meta.full_name) ||
+    (typeof meta?.name === 'string' && meta.name) ||
+    user.email?.split('@')[0] ||
+    'Kullanici';
 
   return {
     email: user.email ?? null,
-    displayName:
-      typeof user.user_metadata?.display_name === 'string'
-        ? user.user_metadata.display_name
-        : user.email ?? 'Kullanici',
+    displayName,
   };
 };
 
@@ -65,7 +69,9 @@ export function AuthNav({ initialUser }: AuthNavProps) {
 
   const handleSignOut = () => {
     startTransition(async () => {
-      await signOut();
+      const supabase = createBrowserClient();
+      // Browser client signOut: hem cookie'yi temizler hem onAuthStateChange(SIGNED_OUT) ateşler
+      await supabase.auth.signOut();
       router.push('/');
       router.refresh();
     });
@@ -73,11 +79,12 @@ export function AuthNav({ initialUser }: AuthNavProps) {
 
   if (!user) {
     return (
-      <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-        <Button asChild variant="ghost" className="w-full text-slate-200 hover:bg-cyan-400/10 hover:text-cyan-200 sm:w-auto">
+      <div className="flex w-full items-center gap-2 sm:w-auto sm:flex-row">
+        <ThemeToggle />
+        <Button asChild variant="ghost" className="w-full text-foreground/80 hover:bg-primary/10 hover:text-primary sm:w-auto">
           <Link href="/login">Giris Yap</Link>
         </Button>
-        <Button asChild className="neon-cyan w-full sm:w-auto">
+        <Button asChild className="neon-cyan w-full bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto">
           <Link href="/register">Kayit Ol</Link>
         </Button>
       </div>
@@ -87,19 +94,19 @@ export function AuthNav({ initialUser }: AuthNavProps) {
   return (
     <div className="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
       <div className="min-w-0 sm:text-right">
-        <p className="truncate text-sm font-medium text-slate-100">{user.displayName}</p>
-        <p className="truncate text-xs text-slate-400">{user.email}</p>
+        <p className="truncate text-sm font-medium text-foreground">{user.displayName}</p>
+        <p className="truncate text-xs text-muted-foreground">{user.email}</p>
       </div>
 
-      <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-        <Button asChild variant="outline" className="w-full border-cyan-300/20 bg-cyan-300/5 text-cyan-100 hover:bg-cyan-300/10 hover:text-cyan-50 sm:w-auto">
+      <div className="flex w-full items-center gap-2 sm:w-auto sm:flex-row">
+        <ThemeToggle />
+        <Button asChild variant="outline" className="w-full border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 sm:w-auto">
           <Link href="/dashboard">Dashboard</Link>
         </Button>
-
         <Button
           type="button"
           variant="ghost"
-          className="w-full text-slate-200 hover:bg-fuchsia-400/10 hover:text-fuchsia-200 sm:w-auto"
+          className="w-full text-foreground/70 hover:bg-destructive/10 hover:text-destructive sm:w-auto"
           onClick={handleSignOut}
           disabled={isPending}
         >

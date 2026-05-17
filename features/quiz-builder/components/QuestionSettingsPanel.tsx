@@ -23,16 +23,16 @@ export function QuestionSettingsPanel({
   canRemove,
 }: QuestionSettingsPanelProps) {
   return (
-    <aside className="theme-panel-soft h-full space-y-6 rounded-[24px] border border-slate-800 p-4 text-slate-100 sm:p-6">
+    <aside className="theme-panel-soft h-full space-y-6 rounded-[24px] border p-4 sm:p-6">
       <div>
-        <h3 className="text-base font-semibold text-white">Soru Ayarlari</h3>
-        <p className="mt-1 text-xs text-slate-400">
+        <h3 className="text-base font-semibold text-foreground">Soru Ayarlari</h3>
+        <p className="mt-1 text-xs text-muted-foreground">
           Bu soru icin sure ve puani buradan duzenle.
         </p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="setting-time" className="text-slate-300">
+        <Label htmlFor="setting-time" className="text-muted-foreground">
           Sure (saniye)
         </Label>
         <Input
@@ -41,16 +41,14 @@ export function QuestionSettingsPanel({
           min={5}
           max={300}
           value={question.timeLimitSeconds}
-          onChange={(e) =>
-            onChange({ timeLimitSeconds: Number(e.target.value) })
-          }
-          className="rounded-2xl border-slate-700 bg-slate-950/70 text-slate-100"
+          onChange={(e) => onChange({ timeLimitSeconds: Number(e.target.value) })}
+          className="rounded-2xl"
         />
-        <p className="text-xs text-slate-500">5-300 saniye arasi.</p>
+        <p className="text-xs text-muted-foreground">5-300 saniye arasi.</p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="setting-points" className="text-slate-300">
+        <Label htmlFor="setting-points" className="text-muted-foreground">
           Puan
         </Label>
         <Input
@@ -60,25 +58,25 @@ export function QuestionSettingsPanel({
           max={1000}
           value={question.points}
           onChange={(e) => onChange({ points: Number(e.target.value) })}
-          className="rounded-2xl border-slate-700 bg-slate-950/70 text-slate-100"
+          className="rounded-2xl"
         />
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-muted-foreground">
           Dogru cevap icin verilecek temel puan.
         </p>
       </div>
 
-      <div className="border-t border-slate-700 pt-4">
+      <div className="border-t border-border pt-4">
         <Button
           type="button"
           variant="outline"
           onClick={onRemove}
           disabled={!canRemove}
-          className="w-full border-rose-400/30 bg-rose-400/10 text-rose-100 hover:bg-rose-400/15 hover:text-rose-50 disabled:border-slate-700 disabled:bg-slate-950/50 disabled:text-slate-500"
+          className="w-full border-destructive/30 bg-destructive/8 text-destructive hover:bg-destructive/15 disabled:border-border disabled:bg-muted disabled:text-muted-foreground"
         >
           Bu Soruyu Sil
         </Button>
         {!canRemove && (
-          <p className="mt-2 text-center text-xs text-slate-500">
+          <p className="mt-2 text-center text-xs text-muted-foreground">
             En az bir soru kalmali.
           </p>
         )}
